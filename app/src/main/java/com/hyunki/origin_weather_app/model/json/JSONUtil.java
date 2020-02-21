@@ -18,47 +18,16 @@ import io.reactivex.Observable;
 public class JSONUtil {
     public static final String TAG = "jsonutil";
 
-    public static String inputStreamToString(InputStream inputStream) {
-        try {
-            byte[] bytes = new byte[inputStream.available()];
-            inputStream.read(bytes, 0, bytes.length);
-            String json = new String(bytes);
-            return json;
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
-    public static String parseJSONString(Context context, String filename) {
-        String returnedJSON = null;
-        try {
-            returnedJSON = inputStreamToString(context.getAssets().open(filename));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return returnedJSON;
-    }
-
-    public static City[] cityStringListToGson(String JSON){
-        City[] cities = new Gson().fromJson(JSON, City[].class);
-        return cities;
-    }
-
     public static City[] cityJSONtoJACKSON(Context context, String filename){
         ObjectMapper mapper = new ObjectMapper();
-//        InputStream input;
         City[] cities = null;
-
         try {
             Log.d(TAG, "cityJSONtoJACKSON: trying");
-//            input = context.getAssets().open(filename);
-//            Log.d(TAG, "cityJSONtoJACKSON: " + input.available());
             mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
             cities = mapper.readValue(context.getAssets().open(filename), City[].class);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         return cities;
     }
 
