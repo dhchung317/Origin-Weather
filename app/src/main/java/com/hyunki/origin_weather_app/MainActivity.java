@@ -22,6 +22,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private MutableLiveData<String> defaultLocation = new MutableLiveData<>();
 
     private ImageView mainIcon;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
 //icons - http://openweathermap.org/img/wn/ {10d} @2x.png
 
@@ -60,6 +62,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        swipeRefreshLayout = findViewById(R.id.swiperefresh);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                requestNewLocationData();
+            }
+        });
         mainIcon = findViewById(R.id.main_imageView);
 
         progressBar = findViewById(R.id.progress_bar);
@@ -258,6 +267,9 @@ public class MainActivity extends AppCompatActivity {
     private LocationCallback locationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
+            if(swipeRefreshLayout.isRefreshing()) {
+                swipeRefreshLayout.setRefreshing(false);
+            }
             defaultLocation.setValue(
                     getLocationString(
                             locationResult.getLastLocation()));
@@ -281,6 +293,8 @@ public class MainActivity extends AppCompatActivity {
             getLastLocation();
         }
     }
+
+
 }
 
 
