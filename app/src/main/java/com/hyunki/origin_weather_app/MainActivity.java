@@ -1,61 +1,43 @@
 package com.hyunki.origin_weather_app;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Looper;
-import android.provider.Settings;
 import android.util.Log;
-import android.widget.Toast;
+import android.view.View;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
+import com.google.android.material.snackbar.Snackbar;
 import com.hyunki.origin_weather_app.model.Forecast;
-import com.hyunki.origin_weather_app.model.WeatherResponse;
-import com.hyunki.origin_weather_app.network.RetrofitFactory;
-import com.hyunki.origin_weather_app.network.WeatherService;
+import com.hyunki.origin_weather_app.viewmodel.MainViewModel;
+import com.hyunki.origin_weather_app.viewmodel.State;
 
-import java.io.IOException;
-import java.util.List;
 import java.util.Locale;
-
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "main--";
 
-    public static final String API_KEY = "872ec5abb676430b71b8708ce8e2e1ba";
+//    public static final int PERMISSION_ID = 317;
 
-    public static final int PERMISSION_ID = 317;
+    private MainViewModel viewModel;
 
-    FusedLocationProviderClient fusedLocationClient;
+    private FusedLocationProviderClient fusedLocationClient;
+
+    private MutableLiveData<String> defaultLocation = new MutableLiveData<>();
 
 //icons - http://openweathermap.org/img/wn/ {10d} @2x.png
-
-
-
 
     @SuppressLint("CheckResult")
     @Override
@@ -63,66 +45,30 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        RetrofitFactory.getInstance()
-                .create(WeatherService.class)
-                .getResponse("london",API_KEY)
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnError(new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) throws Exception {
-                        Log.d(TAG, "accept: " + throwable);
-                    }
-                })
-                .subscribeOn(Schedulers.io())
-                .subscribe(new Consumer<WeatherResponse>() {
-                    @Override
-                    public void accept(WeatherResponse weatherResponse) throws Exception {
-                        Log.d(TAG, "accept: " + weatherResponse.getList().size());
-                        Log.d(TAG, "accept: " + weatherResponse.getList().get(0).getWeather().get(0).getDescription());
-                        Log.d(TAG, "accept: " + weatherResponse.getList().get(0).getWeather().get(0).getIcon());
-                        Log.d(TAG, "accept: " + weatherResponse.getList().get(0).getWeather().get(0).getMain());
-                        Log.d(TAG, "accept: " + weatherResponse.getList().get(0).getTemp().getTemp());
-                        Log.d(TAG, "accept: " + weatherResponse.getList().get(0).getDate());
-                        Log.d(TAG, "accept: " + weatherResponse.getList().get(1).getDate());
-                        Log.d(TAG, "accept: " + weatherResponse.getList().get(2).getDate());
+        getLastLocation();
 
-                    }
-                });
+        defaultLocation.observe(this, s -> {
+            viewModel.getForecasts(s);
+            Log.d(TAG, "onCreate: location " + s);
 
-//        getLastLocation();
-        requestNewLocationData();
+        });
 
+        viewModel.getLivedata().observe(this, state -> {
+            render(state);
+        });
     }
 
-
-    private boolean checkPermissions(){
+    private boolean checkPermissions() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             return true;
         }
         return false;
     }
-
-    private void requestPermissions(){
-        ActivityCompat.requestPermissions(
-                this,
-                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION},
-                PERMISSION_ID
-        );
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_ID) {
-            if(grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-                // Granted. Start getting the location information
-            }
-        }
-    }
-
 
     private boolean isLocationEnabled() {
         LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -132,90 +78,75 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @SuppressLint("MissingPermission")
-    private void getLastLocation(){
-        if (checkPermissions()) {
-            if (isLocationEnabled()) {
-                fusedLocationClient.getLastLocation().addOnCompleteListener(
-                        new OnCompleteListener<Location>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Location> task) {
-                                Location location = task.getResult();
-                                if (location == null) {
-                                    requestNewLocationData();
-                                } else {
-
-                                    Geocoder gcd = new Geocoder(getBaseContext(),Locale.getDefault());
-                                    try {
-                                        Address firstAddy = gcd.getFromLocation(location.getLatitude(),
-                                                location.getLongitude(), 1).get(0);
-
-                                        String locality = firstAddy.getLocality();
-                                        String state = firstAddy.getAdminArea();
-
-                                        Log.d(TAG, "onComplete: " + locality + state);
-
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
-                                    }
-
-                                }
-                            }
+    private void getLastLocation() {
+        if (checkPermissions() && isLocationEnabled()) {
+            fusedLocationClient.getLastLocation().addOnCompleteListener(
+                    task -> {
+                        Location location = task.getResult();
+                        if (location != null) {
+                            defaultLocation.setValue(getLocationString(location));
+                        }else{
+                            showLocationErrorSnack();
                         }
-                );
-            } else {
-                Toast.makeText(this, "Turn on location", Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(intent);
-            }
-        } else {
-            requestPermissions();
+                    });
         }
     }
 
-    @SuppressLint("MissingPermission")
-    private void requestNewLocationData(){
+    private String getLocationString(Location location) {
+        Geocoder gcd = new Geocoder(getBaseContext(),
+                Locale.getDefault());
+        Address address;
+        String locationString = "";
+        try {
+            address = gcd.getFromLocation(
+                    location.getLatitude(),
+                    location.getLongitude(),
+                    1).get(0);
+            String locality = address.getLocality();
+            String state = address.getAdminArea();
+            locationString = String.format("%s,%s", locality, state);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return locationString;
+    }
 
-        LocationRequest locationRequest = new LocationRequest();
-        locationRequest.setPriority(LocationRequest
-                .PRIORITY_HIGH_ACCURACY)
-                .setInterval(0)
-                .setFastestInterval(0)
-                .setNumUpdates(1);
+    private void render(State state) {
 
+        if (state == State.Loading.INSTANCE) {
+            Log.d(TAG, "render: state was loading");
 
+        } else if (state == State.Error.INSTANCE) {
+            Log.d(TAG, "render: state error");
+            showNetworkErrorSnack();
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        fusedLocationClient.requestLocationUpdates(
-                locationRequest, locationCallback,
-                Looper.myLooper()
-        );
+        } else if (state.getClass() == State.Success.class) {
+            Log.d(TAG, "render: state was success");
+            State.Success s = (State.Success) state;
+            for(Forecast f : s.getForecasts()){
+                Log.d(TAG, "render: successful" + f.getDate());
+            }
+        }
 
     }
 
-    private LocationCallback locationCallback = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            Location location = locationResult.getLastLocation();
+    public void showSnackBar(View v, String message) {
+        // parametrised constructor
 
-            Geocoder gcd = new Geocoder(getBaseContext(),Locale.getDefault());
+        Snackbar.make(v, message,
+                Snackbar.LENGTH_SHORT)
+                .show();
+    }
 
+    public void showNetworkErrorSnack() {
+        showSnackBar(findViewById(R.id.coordinatorLayout), getString(R.string.network_error));
+    }
 
-            try {
-
-                Address firstAddy = gcd.getFromLocation(location.getLatitude(),
-                        location.getLongitude(), 1).get(0);
-                String locality = firstAddy.getLocality();
-                String state = firstAddy.getAdminArea();
-                Log.d(TAG, "onComplete: " + locality + state);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-
-
-        }
-    };
+    public void showLocationErrorSnack(){
+        showSnackBar(findViewById(R.id.coordinatorLayout), getString(R.string.location_error));
+    }
 }
+
 
 //        - Displays users location and local weather (in Fahrenheit) upon opening app
 //        - Present detailed weather conditions (rain, sleet, sunny, etc.) with strong attention to design
