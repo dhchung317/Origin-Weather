@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Origin-Weather-App</string>
+    <string name="network_error">could not get forecasts</string>
+    <string name="location_error">could not get location. check network settings</string>
 </resources>
