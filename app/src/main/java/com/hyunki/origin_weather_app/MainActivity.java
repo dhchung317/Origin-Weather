@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -23,6 +24,8 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -30,8 +33,11 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.tabs.TabLayout;
+import com.hyunki.origin_weather_app.adapter.WeatherPagerAdapter;
 import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.model.Forecast;
+import com.hyunki.origin_weather_app.model.util.TempUtil;
 import com.hyunki.origin_weather_app.viewmodel.MainViewModel;
 import com.hyunki.origin_weather_app.viewmodel.State;
 import com.squareup.picasso.Picasso;
@@ -54,6 +60,12 @@ public class MainActivity extends AppCompatActivity {
 
     private ImageView mainIcon;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private TextView tempTextView;
+    private TextView locationTextView;
+
+    TabLayout tabLayout;
+    ViewPager viewPager;
+    WeatherPagerAdapter viewPagerAdapter;
 
 //icons - http://openweathermap.org/img/wn/ {10d} @2x.png
 
@@ -62,16 +74,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mainIcon = findViewById(R.id.main_imageView);
+        progressBar = findViewById(R.id.progress_bar);
         swipeRefreshLayout = findViewById(R.id.swiperefresh);
+        tempTextView = findViewById(R.id.temp_textView);
+        locationTextView = findViewById(R.id.location_textView);
+
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 requestNewLocationData();
             }
         });
-        mainIcon = findViewById(R.id.main_imageView);
 
-        progressBar = findViewById(R.id.progress_bar);
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         getLastLocation();
@@ -84,6 +99,12 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getForecastLivedata().observe(this, state -> {
             renderForecast(state);
         });
+
+        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        viewPagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager());
+        viewPager.setAdapter(viewPagerAdapter);
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
 
 
 
@@ -201,14 +222,17 @@ public class MainActivity extends AppCompatActivity {
             }
 
             List<Forecast> forecasts = (List<Forecast>) s.getAny();
+            Forecast forecast = forecasts.get(0);
 
+            Log.d(TAG, "renderForecast: " + forecast.getTemp().getTemp());
+            Log.d(TAG, "renderForecast: " + TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTemp()));
 
+            int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTemp());
+
+            tempTextView.setText((temp) + " \u2109");
+            locationTextView.setText(defaultLocation.getValue());
             String icon = forecasts.get(0).getWeather().get(0).getIcon();
-
-            String test = "https://openweathermap.org/img/wn/10d@2x.png";
-
             String iconUri = String.format("https://openweathermap.org/img/wn/%s@2x.png", icon);
-
             Picasso.get().load(iconUri).into(mainIcon);
         }
 
