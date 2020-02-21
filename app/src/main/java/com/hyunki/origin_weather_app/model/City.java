@@ -3,21 +3,21 @@ package com.hyunki.origin_weather_app.model;
 import com.google.gson.annotations.SerializedName;
 
 public class City {
-    @SerializedName("id")
-    int countryCode;
 
-    @SerializedName("name")
-    String city;
+    int id;
 
-    @SerializedName("country")
+
+    String name;
+
+
     String country;
 
-    public int getCountryCode() {
-        return countryCode;
+    public int getId() {
+        return id;
     }
 
-    public String getCity() {
-        return city;
+    public String getName() {
+        return name;
     }
 
     public String getCountry() {

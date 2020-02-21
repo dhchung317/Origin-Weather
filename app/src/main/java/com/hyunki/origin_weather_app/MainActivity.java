@@ -64,14 +64,15 @@ public class MainActivity extends AppCompatActivity {
 //            renderForecast(state);
 //        });
 
-        viewModel.loadJSONString(getApplicationContext(),"citylist.json");
-
-        viewModel.getJSONStringLivedata().observe(this, new Observer<State>() {
-            @Override
-            public void onChanged(State state) {
-                onJSONStringParsed(state);
-            }
-        });
+//        viewModel.loadJSONString(getApplicationContext(),"citylist.json");
+//
+//        viewModel.getJSONStringLivedata().observe(this, new Observer<State>() {
+//            @Override
+//            public void onChanged(State state) {
+//                onJSONStringParsed(state);
+//            }
+//        });
+        viewModel.loadCities(getApplicationContext(),"citylist.json");
 
         viewModel.getCitylivedata().observe(this, new Observer<State>() {
             @Override
@@ -164,31 +165,33 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "render: state was success");
             State.Success s = (State.Success) state;
 
-            for(City c : (City[]) s.getAny()){
-                Log.d(TAG, "render: successful" + c.getCity());
-            }
+//            for(City c : (List<City>) s.getAny()){
+//                Log.d(TAG, "render: successful" + c.getName());
+//
+//            }
+            Log.d(TAG, "render: successful" + ((List<City>) s.getAny()).size());
         }
 
     }
 
-    private void onJSONStringParsed(State state) {
-
-        if (state == State.Loading.INSTANCE) {
-            Log.d(TAG, "render: state was loading");
-
-        } else if (state == State.Error.INSTANCE) {
-            Log.d(TAG, "render: state error");
-
-
-        } else if (state.getClass() == State.Success.class) {
-            Log.d(TAG, "render: state was success");
-            State.Success s = (State.Success) state;
-            String string = (String) s.getAny();
-            Log.d(TAG, "render: state was success: " + string);
-            viewModel.loadCities(string);
-        }
-
-    }
+//    private void onJSONStringParsed(State state) {
+//
+//        if (state == State.Loading.INSTANCE) {
+//            Log.d(TAG, "render: state was loading");
+//
+//        } else if (state == State.Error.INSTANCE) {
+//            Log.d(TAG, "render: state error");
+//
+//
+//        } else if (state.getClass() == State.Success.class) {
+//            Log.d(TAG, "render: state was success");
+//            State.Success s = (State.Success) state;
+//            String string = (String) s.getAny();
+//            Log.d(TAG, "render: state was success: " + string);
+//            viewModel.loadCities(string);
+//        }
+//
+//    }
 
     public void showSnackBar(View v, String message) {
         // parametrised constructor

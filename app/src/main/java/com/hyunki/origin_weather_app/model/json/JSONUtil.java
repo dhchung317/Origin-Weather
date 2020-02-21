@@ -1,10 +1,14 @@
 package com.hyunki.origin_weather_app.model.json;
 
 import android.content.Context;
+import android.util.Log;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.hyunki.origin_weather_app.model.City;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -12,7 +16,7 @@ import io.reactivex.Observable;
 
 
 public class JSONUtil {
-
+    public static final String TAG = "jsonutil";
 
     public static String inputStreamToString(InputStream inputStream) {
         try {
@@ -37,6 +41,24 @@ public class JSONUtil {
 
     public static City[] cityStringListToGson(String JSON){
         City[] cities = new Gson().fromJson(JSON, City[].class);
+        return cities;
+    }
+
+    public static City[] cityJSONtoJACKSON(Context context, String filename){
+        ObjectMapper mapper = new ObjectMapper();
+//        InputStream input;
+        City[] cities = null;
+
+        try {
+            Log.d(TAG, "cityJSONtoJACKSON: trying");
+//            input = context.getAssets().open(filename);
+//            Log.d(TAG, "cityJSONtoJACKSON: " + input.available());
+            mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+            cities = mapper.readValue(context.getAssets().open(filename), City[].class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         return cities;
     }
 

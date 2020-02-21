@@ -1,5 +1,7 @@
 package com.hyunki.origin_weather_app.repository;
 
+import android.content.Context;
+
 import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.model.Forecast;
 
@@ -12,6 +14,6 @@ public interface Repository {
 
     Observable<List<Forecast>> getForecasts(String location);
 
-    City[] getCities(String JSON);
+    City[] getCities(Context context, String filename);
 
 }

@@ -36,8 +36,8 @@ public class RepositoryImpl implements Repository {
     }
 
     @Override
-    public City[] getCities(String JSON) {
-        return JSONUtil.cityStringListToGson(JSON);
+    public City[] getCities(Context context, String filename) {
+        return JSONUtil.cityJSONtoJACKSON(context, filename);
     }
 
 
