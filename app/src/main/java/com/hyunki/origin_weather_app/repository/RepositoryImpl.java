@@ -5,18 +5,14 @@ import android.content.Context;
 import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.model.Forecast;
 import com.hyunki.origin_weather_app.model.WeatherResponse;
-import com.hyunki.origin_weather_app.model.json.JSONUtil;
+import com.hyunki.origin_weather_app.model.util.JSONUtil;
 import com.hyunki.origin_weather_app.network.RetrofitFactory;
 import com.hyunki.origin_weather_app.network.WeatherService;
 
 import java.util.List;
 
 import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
-import io.reactivex.Single;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Function;
-import io.reactivex.schedulers.Schedulers;
 
 public class RepositoryImpl implements Repository {
 
