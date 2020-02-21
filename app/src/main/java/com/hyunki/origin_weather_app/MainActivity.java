@@ -14,6 +14,8 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -31,6 +33,7 @@ import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.model.Forecast;
 import com.hyunki.origin_weather_app.viewmodel.MainViewModel;
 import com.hyunki.origin_weather_app.viewmodel.State;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 import java.util.Locale;
@@ -40,11 +43,15 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int PERMISSION_ID = 317;
 
+    private ProgressBar progressBar;
+
     private MainViewModel viewModel;
 
     private FusedLocationProviderClient fusedLocationClient;
 
     private MutableLiveData<String> defaultLocation = new MutableLiveData<>();
+
+    private ImageView mainIcon;
 
 //icons - http://openweathermap.org/img/wn/ {10d} @2x.png
 
@@ -53,11 +60,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        mainIcon = findViewById(R.id.main_imageView);
 
+        progressBar = findViewById(R.id.progress_bar);
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
         getLastLocation();
 
         defaultLocation.observe(this, s -> {
@@ -65,10 +72,11 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "onCreate: location " + s);
 
         });
-
         viewModel.getForecastLivedata().observe(this, state -> {
             renderForecast(state);
         });
+
+
 
 //        viewModel.loadCities(getApplicationContext(),"citylist.json");
 //
@@ -95,6 +103,16 @@ public class MainActivity extends AppCompatActivity {
 
     public void showLocationErrorSnack() {
         showSnackBar(findViewById(R.id.coordinatorLayout), getString(R.string.location_error));
+    }
+
+    private void showProgressBar(boolean isVisible){
+
+        if(isVisible){
+            progressBar.setVisibility(View.VISIBLE);
+        }else{
+            progressBar.setVisibility(View.GONE);
+        }
+
     }
 
 
@@ -156,19 +174,33 @@ public class MainActivity extends AppCompatActivity {
     private void renderForecast(State state) {
 
         if (state == State.Loading.INSTANCE) {
+            showProgressBar(true);
             Log.d(TAG, "render: state was loading");
 
         } else if (state == State.Error.INSTANCE) {
+            showProgressBar(false);
             Log.d(TAG, "render: state error");
             showNetworkErrorSnack();
 
         } else if (state.getClass() == State.Success.class) {
+            showProgressBar(false);
             Log.d(TAG, "render: state was success");
             State.Success s = (State.Success) state;
 
             for (Forecast f : (List<Forecast>) s.getAny()) {
                 Log.d(TAG, "render: successful" + f.getDate());
             }
+
+            List<Forecast> forecasts = (List<Forecast>) s.getAny();
+
+
+            String icon = forecasts.get(0).getWeather().get(0).getIcon();
+
+            String test = "https://openweathermap.org/img/wn/10d@2x.png";
+
+            String iconUri = String.format("https://openweathermap.org/img/wn/%s@2x.png", icon);
+
+            Picasso.get().load(iconUri).into(mainIcon);
         }
 
     }
@@ -176,13 +208,16 @@ public class MainActivity extends AppCompatActivity {
     private void renderCities(State state) {
 
         if (state == State.Loading.INSTANCE) {
+            showProgressBar(true);
             Log.d(TAG, "render: state was loading");
 
         } else if (state == State.Error.INSTANCE) {
+            showProgressBar(false);
             Log.d(TAG, "render: state error");
             showNetworkErrorSnack();
 
         } else if (state.getClass() == State.Success.class) {
+            showProgressBar(false);
             Log.d(TAG, "render: state was success");
             State.Success s = (State.Success) state;
 
