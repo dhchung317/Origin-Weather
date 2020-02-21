@@ -1,5 +1,8 @@
 package com.hyunki.origin_weather_app.repository;
 
+import android.content.Context;
+
+import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.model.Forecast;
 
 import java.util.List;
@@ -10,4 +13,7 @@ import io.reactivex.Single;
 public interface Repository {
 
     Observable<List<Forecast>> getForecasts(String location);
+
+    City[] getCities(Context context, String filename);
+
 }

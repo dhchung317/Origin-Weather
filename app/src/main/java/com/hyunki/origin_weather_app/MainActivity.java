@@ -15,15 +15,18 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.snackbar.Snackbar;
+import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.model.Forecast;
 import com.hyunki.origin_weather_app.viewmodel.MainViewModel;
 import com.hyunki.origin_weather_app.viewmodel.State;
 
+import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -49,17 +52,35 @@ public class MainActivity extends AppCompatActivity {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        getLastLocation();
+//        getLastLocation();
+//
+//        defaultLocation.observe(this, s -> {
+//            viewModel.getForecasts(s);
+//            Log.d(TAG, "onCreate: location " + s);
+//
+//        });
+//
+//        viewModel.getForecastLivedata().observe(this, state -> {
+//            renderForecast(state);
+//        });
 
-        defaultLocation.observe(this, s -> {
-            viewModel.getForecasts(s);
-            Log.d(TAG, "onCreate: location " + s);
+//        viewModel.loadJSONString(getApplicationContext(),"citylist.json");
+//
+//        viewModel.getJSONStringLivedata().observe(this, new Observer<State>() {
+//            @Override
+//            public void onChanged(State state) {
+//                onJSONStringParsed(state);
+//            }
+//        });
+        viewModel.loadCities(getApplicationContext(),"citylist.json");
 
+        viewModel.getCitylivedata().observe(this, new Observer<State>() {
+            @Override
+            public void onChanged(State state) {
+                renderCities(state);
+            }
         });
 
-        viewModel.getLivedata().observe(this, state -> {
-            render(state);
-        });
     }
 
     private boolean checkPermissions() {
@@ -111,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
         return locationString;
     }
 
-    private void render(State state) {
+    private void renderForecast(State state) {
 
         if (state == State.Loading.INSTANCE) {
             Log.d(TAG, "render: state was loading");
@@ -123,12 +144,54 @@ public class MainActivity extends AppCompatActivity {
         } else if (state.getClass() == State.Success.class) {
             Log.d(TAG, "render: state was success");
             State.Success s = (State.Success) state;
-            for(Forecast f : s.getForecasts()){
+
+            for(Forecast f : (List<Forecast>) s.getAny()){
                 Log.d(TAG, "render: successful" + f.getDate());
             }
         }
 
     }
+
+    private void renderCities(State state) {
+
+        if (state == State.Loading.INSTANCE) {
+            Log.d(TAG, "render: state was loading");
+
+        } else if (state == State.Error.INSTANCE) {
+            Log.d(TAG, "render: state error");
+            showNetworkErrorSnack();
+
+        } else if (state.getClass() == State.Success.class) {
+            Log.d(TAG, "render: state was success");
+            State.Success s = (State.Success) state;
+
+//            for(City c : (List<City>) s.getAny()){
+//                Log.d(TAG, "render: successful" + c.getName());
+//
+//            }
+            Log.d(TAG, "render: successful" + ((List<City>) s.getAny()).size());
+        }
+
+    }
+
+//    private void onJSONStringParsed(State state) {
+//
+//        if (state == State.Loading.INSTANCE) {
+//            Log.d(TAG, "render: state was loading");
+//
+//        } else if (state == State.Error.INSTANCE) {
+//            Log.d(TAG, "render: state error");
+//
+//
+//        } else if (state.getClass() == State.Success.class) {
+//            Log.d(TAG, "render: state was success");
+//            State.Success s = (State.Success) state;
+//            String string = (String) s.getAny();
+//            Log.d(TAG, "render: state was success: " + string);
+//            viewModel.loadCities(string);
+//        }
+//
+//    }
 
     public void showSnackBar(View v, String message) {
         // parametrised constructor
