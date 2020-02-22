@@ -14,18 +14,14 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -34,13 +30,13 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.hyunki.origin_weather_app.adapter.WeatherPagerAdapter;
 import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.model.Forecast;
 import com.hyunki.origin_weather_app.model.util.TempUtil;
-import com.hyunki.origin_weather_app.viewmodel.MainViewModel;
+import com.hyunki.origin_weather_app.viewmodel.SharedViewModel;
 import com.hyunki.origin_weather_app.viewmodel.State;
-import com.squareup.picasso.Picasso;
 
 import java.util.List;
 import java.util.Locale;
@@ -50,22 +46,17 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int PERMISSION_ID = 317;
 
-    private ProgressBar progressBar;
-
-    private MainViewModel viewModel;
+    private SharedViewModel viewModel;
 
     private FusedLocationProviderClient fusedLocationClient;
 
     private MutableLiveData<String> defaultLocation = new MutableLiveData<>();
 
-    private ImageView mainIcon;
+    private ProgressBar progressBar;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private TextView tempTextView;
-    private TextView locationTextView;
-
-    TabLayout tabLayout;
-    ViewPager viewPager;
-    WeatherPagerAdapter viewPagerAdapter;
+    private TabLayout tabLayout;
+    private ViewPager2 viewPager;
+    private WeatherPagerAdapter viewPagerAdapter;
 
 //icons - http://openweathermap.org/img/wn/ {10d} @2x.png
 
@@ -74,20 +65,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mainIcon = findViewById(R.id.main_imageView);
+
         progressBar = findViewById(R.id.progress_bar);
         swipeRefreshLayout = findViewById(R.id.swiperefresh);
-        tempTextView = findViewById(R.id.temp_textView);
-        locationTextView = findViewById(R.id.location_textView);
 
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                requestNewLocationData();
-            }
-        });
+        swipeRefreshLayout.setOnRefreshListener(() -> requestNewLocationData());
 
-        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        viewModel = ViewModelProviders.of(this).get(SharedViewModel.class);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         getLastLocation();
 
@@ -96,17 +80,22 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "onCreate: location " + s);
 
         });
-        viewModel.getForecastLivedata().observe(this, state -> {
-            renderForecast(state);
-        });
+//        viewModel.getForecastLivedata().observe(this, state -> {
+//            renderForecast(state);
+//        });
 
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
-        viewPagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager());
+        viewPager = findViewById(R.id.viewpager);
+        viewPagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager(),this.getLifecycle());
         viewPager.setAdapter(viewPagerAdapter);
-        tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);
-
-
+        tabLayout = findViewById(R.id.tabs);
+        new TabLayoutMediator(tabLayout,viewPager,
+                (tab, position) -> {
+            if(position == 0){
+                tab.setText(R.string.tab_weather_label);
+            }else if(position == 1){
+                tab.setText(R.string.tab_explore_label);
+            }
+                }).attach();
 
 //        viewModel.loadCities(getApplicationContext(),"citylist.json");
 //
@@ -144,7 +133,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-
 
     private boolean checkPermissions() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
@@ -228,12 +216,11 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "renderForecast: " + TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTemp()));
 
             int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTemp());
-
-            tempTextView.setText((temp) + " \u2109");
-            locationTextView.setText(defaultLocation.getValue());
-            String icon = forecasts.get(0).getWeather().get(0).getIcon();
-            String iconUri = String.format("https://openweathermap.org/img/wn/%s@2x.png", icon);
-            Picasso.get().load(iconUri).into(mainIcon);
+//            tempTextView.setText((temp) + getString(R.string.degree_fahrenheit));
+//            locationTextView.setText(defaultLocation.getValue());
+//            String icon = forecasts.get(0).getWeather().get(0).getIcon();
+//            String iconUri = String.format("https://openweathermap.org/img/wn/%s@2x.png", icon);
+//            Picasso.get().load(iconUri).into(mainIcon);
         }
 
     }

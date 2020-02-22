@@ -18,7 +18,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
-public class MainViewModel extends ViewModel {
+public class SharedViewModel extends ViewModel {
     public static final String TAG = "mainviewmodel";
     final RepositoryImpl repository = new RepositoryImpl();
     private CompositeDisposable disposable = new CompositeDisposable();
@@ -51,10 +51,9 @@ public class MainViewModel extends ViewModel {
                         (Callable<ObservableSource<City[]>>) () -> Observable.just(repository.getCities(context, filename)))
                         .subscribeOn(Schedulers.computation())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .flatMapIterable(cities -> Arrays.asList(cities))
-//                        .take(10000)
-                        .toList()
-
+//                        .flatMapIterable(cities -> Arrays.asList(cities))
+////                        .take(10000)
+//                        .toList()
                         .doOnError(throwable -> {
                             Log.e(TAG, "loadCities: ", throwable);
                         }).subscribe(cities -> citylivedata.setValue(new State.Success(cities)))

@@ -7,24 +7,25 @@ import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.hyunki.origin_weather_app.R;
+import com.hyunki.origin_weather_app.model.City;
 
-public class RecyclerViewAdapter extends RecyclerView.Adapter<TextItemViewHolder> {
+public class CityRecyclerViewAdapter extends RecyclerView.Adapter<CityViewHolder> {
 
-    String[] items;
+    City[] cities;
 
-    public RecyclerViewAdapter(String[] items) {
-        this.items = items;
+    public CityRecyclerViewAdapter(City[] cities) {
+        this.cities = cities;
     }
 
     @Override
-    public TextItemViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public CityViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_view_list_item, parent, false);
-        return new TextItemViewHolder(view);
+        return new CityViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(TextItemViewHolder holder, int position) {
-        holder.bind(items[position]);
+    public void onBindViewHolder(CityViewHolder holder, int position) {
+        holder.bind(cities[position]);
     }
 
     @Override
@@ -34,6 +35,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<TextItemViewHolder
 
     @Override
     public int getItemCount() {
-        return items.length;
+        return cities.length;
     }
 }

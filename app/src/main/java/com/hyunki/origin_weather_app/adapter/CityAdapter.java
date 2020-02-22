@@ -1,6 +1,5 @@
 package com.hyunki.origin_weather_app.adapter;
 
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +13,7 @@ import com.hyunki.origin_weather_app.R;
 
 import java.util.ArrayList;
 
-public class CustomAdapter extends ArrayAdapter {
+public class CityAdapter extends ArrayAdapter {
 
     private ArrayList<String> dataSet;
     Context mContext;
@@ -22,14 +21,12 @@ public class CustomAdapter extends ArrayAdapter {
     // View lookup cache
     private static class ViewHolder {
         TextView txtName;
-
     }
 
-    public CustomAdapter(ArrayList data, Context context) {
+    public CityAdapter(ArrayList data, Context context) {
         super(context, R.layout.row_item, data);
         this.dataSet = data;
         this.mContext = context;
-
     }
 
     @Nullable

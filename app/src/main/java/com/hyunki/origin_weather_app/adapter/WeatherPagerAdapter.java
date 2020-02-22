@@ -2,52 +2,38 @@ package com.hyunki.origin_weather_app.adapter;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.lifecycle.Lifecycle;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.hyunki.origin_weather_app.fragments.FragmentA;
-import com.hyunki.origin_weather_app.fragments.FragmentB;
+import com.hyunki.origin_weather_app.fragments.ExploreFragment;
+import com.hyunki.origin_weather_app.fragments.WeatherFragment;
 
-public class WeatherPagerAdapter extends FragmentPagerAdapter {
+public class WeatherPagerAdapter extends FragmentStateAdapter {
 
 
-    public WeatherPagerAdapter(@NonNull FragmentManager fm) {
-        super(fm);
+    public WeatherPagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
+        super(fragmentManager, lifecycle);
     }
 
     @NonNull
     @Override
-    public Fragment getItem(int position) {
-        Fragment fragment = null;
-        if (position == 0)
-        {
-            fragment = new FragmentA();
+    public Fragment createFragment(int position) {
+        switch (position) {
+            case 0:
+                return new WeatherFragment();
+            case 1:
+                return new ExploreFragment();
         }
-        else if (position == 1)
-        {
-            fragment = new FragmentB();
-        }
-
-        return fragment;
-
+        return new WeatherFragment();
     }
 
     @Override
-    public int getCount() {
+    public int getItemCount() {
         return 2;
     }
 
-    @Override
-    public CharSequence getPageTitle(int position) {
-        String title = null;
-        if (position == 0)
-        {
-            title = "My Weather";
-        }
-        else if (position == 1)
-        {
-            title = "Explore";
-        }
-        return title;
-    }
 }
+
