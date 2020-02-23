@@ -5,11 +5,7 @@ import com.google.gson.annotations.SerializedName;
 public class City {
 
     int id;
-
-
     String name;
-
-
     String country;
 
     public int getId() {

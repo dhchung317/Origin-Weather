@@ -4,8 +4,6 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-import io.reactivex.Single;
-
 public class WeatherResponse {
     @SerializedName("list")
     private List<Forecast> list;
