@@ -29,7 +29,7 @@ import java.util.List;
 
 import io.reactivex.Observable;
 
-public class ExploreFragment extends Fragment implements SearchView.OnQueryTextListener {
+public class ExploreFragment extends BaseFragment implements SearchView.OnQueryTextListener {
     public static final String TAG = "explore-fragment";
 
     private SharedViewModel viewModel;
@@ -42,19 +42,25 @@ public class ExploreFragment extends Fragment implements SearchView.OnQueryTextL
     private ImageView weatherIcon;
     private TextView tempTextView;
     private TextView locationTextView;
-    SearchView searchView;
+    private SearchView searchView;
+
+    private String default_id = "";
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
         viewModel = ViewModelProviders.of(getActivity()).get(SharedViewModel.class);
+
         progressBar = getActivity().findViewById(R.id.progress_bar);
+
         viewModel.loadCities(getActivity().getApplicationContext(), "citylist.json");
 
         viewModel.getCityLiveData().observe(getViewLifecycleOwner(), state -> renderCities(state));
         viewModel.getSingleCityLiveData().observe(getViewLifecycleOwner(), state -> renderSingleCity(state));
         viewModel.getExploredForecastLiveData().observe(getViewLifecycleOwner(), state -> renderForecast(state));
     }
+
 
     @Nullable
     @Override
@@ -98,10 +104,7 @@ public class ExploreFragment extends Fragment implements SearchView.OnQueryTextL
 
             cityRecyclerViewAdapter.setList(cities);
             cityRecyclerViewAdapter.setFilteredList(cities);
-//            for(City c : (List<City>) s.getAny()){
-//                Log.d(TAG, "render: successful" + c.getName());
-//
-//            }
+
             Log.d(TAG, "render: successful" + ((City[]) s.getAny()).length);
         }
 
@@ -157,7 +160,12 @@ public class ExploreFragment extends Fragment implements SearchView.OnQueryTextL
 
             City city = (City) s.getAny();
 
+            default_id = city.getName();
+
             locationTextView.setText(city.getName());
+            if(searchView.hasFocus()) {
+                searchView.clearFocus();
+            }
         }
     }
 
@@ -173,6 +181,7 @@ public class ExploreFragment extends Fragment implements SearchView.OnQueryTextL
 
     @Override
     public boolean onQueryTextSubmit(String s) {
+        searchView.clearFocus();
         return false;
     }
 
@@ -187,9 +196,15 @@ public class ExploreFragment extends Fragment implements SearchView.OnQueryTextL
             City[] cityList = cities.toArray(new City[cities.size()]);
             Log.d(TAG, "onQueryTextChange: " + cities.size());
             cityRecyclerViewAdapter.setFilteredList(cityList);
-        });
+        }).dispose();
         return false;
     }
 
-
+    @Override
+    void refresh() {
+        if(!default_id.isEmpty()){
+            viewModel.loadSingleCityById(String.valueOf(default_id));
+            viewModel.loadForecastsById(String.valueOf(default_id));
+        }
+    }
 }

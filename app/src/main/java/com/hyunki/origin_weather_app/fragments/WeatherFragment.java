@@ -1,16 +1,11 @@
 package com.hyunki.origin_weather_app.fragments;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Looper;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,22 +18,13 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.material.snackbar.Snackbar;
 import com.hyunki.origin_weather_app.R;
-import com.hyunki.origin_weather_app.adapter.CityRecyclerViewAdapter;
 import com.hyunki.origin_weather_app.adapter.ForecastRecyclerViewAdapter;
-import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.model.Forecast;
 import com.hyunki.origin_weather_app.model.util.TempUtil;
 import com.hyunki.origin_weather_app.viewmodel.SharedViewModel;
@@ -47,13 +33,10 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
-public class WeatherFragment extends Fragment {
+public class WeatherFragment extends BaseFragment {
     public static final String TAG = "weather-fragment";
     public static final int PERMISSION_ID = 317;
-
-    private FusedLocationProviderClient fusedLocationClient;
 
     private SharedViewModel viewModel;
 
@@ -95,6 +78,11 @@ public class WeatherFragment extends Fragment {
         viewModel.getForecastLivedata().observe(getViewLifecycleOwner(), state -> renderForecast(state));
     }
 
+    @Override
+    void refresh() {
+        viewModel.loadLastLocation();
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -112,7 +100,7 @@ public class WeatherFragment extends Fragment {
 
         forecastRecyclerViewAdapter = new ForecastRecyclerViewAdapter(new ArrayList<>());
         weatherRecyclerView = view.findViewById(R.id.my_weather_recycler_view);
-        weatherRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(),RecyclerView.HORIZONTAL,false));
+        weatherRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.HORIZONTAL, false));
         weatherRecyclerView.setAdapter(forecastRecyclerViewAdapter);
 
     }
@@ -133,11 +121,7 @@ public class WeatherFragment extends Fragment {
             Log.d(TAG, "render: state was success");
             State.Success s = (State.Success) state;
 
-//            for (Forecast f : (List<Forecast>) s.getAny()) {
-//                Log.d(TAG, "render: successful" + f.getDate());
-//            }
-
-            forecastRecyclerViewAdapter.setList((List<Forecast>)s.getAny());
+            forecastRecyclerViewAdapter.setList((List<Forecast>) s.getAny());
             List<Forecast> forecasts = (List<Forecast>) s.getAny();
             Forecast forecast = forecasts.get(0);
 
@@ -210,14 +194,12 @@ public class WeatherFragment extends Fragment {
             }
         }
     }
-//
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//        if (checkPermissions()) {
-//            getLastLocation();
-//        }
-//    }
 
-
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (checkPermissions()) {
+            viewModel.loadLastLocation();
+        }
+    }
 }

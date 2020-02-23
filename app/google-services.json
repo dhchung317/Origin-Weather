@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "48023726632",
+    "firebase_url": "https://origin-weather-app.firebaseio.com",
+    "project_id": "origin-weather-app",
+    "storage_bucket": "origin-weather-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:48023726632:android:021fe46d3df8ee6f91231d",
+        "android_client_info": {
+          "package_name": "com.hyunki.origin_weather_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "48023726632-s8h8lpk9u71p1qumptb8ke25l5akdava.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCQQN_wGcfgCI-ZepwSzE_FG6QzNpNPC8E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "48023726632-s8h8lpk9u71p1qumptb8ke25l5akdava.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

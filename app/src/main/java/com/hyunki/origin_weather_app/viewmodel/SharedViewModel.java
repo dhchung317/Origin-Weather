@@ -39,7 +39,6 @@ public class SharedViewModel extends AndroidViewModel {
     private MutableLiveData<State> exploredForecastLiveData = new MutableLiveData();
 
     private MutableLiveData<State> cityLiveData = new MutableLiveData();
-
     private MutableLiveData<State> singleCityLiveData = new MutableLiveData();
 
     private MutableLiveData<String> defaultLocation = new MutableLiveData<>();
@@ -161,33 +160,5 @@ public class SharedViewModel extends AndroidViewModel {
         }
         return locationString;
     }
-
-
-
-//    @SuppressLint("MissingPermission")
-//    private void requestNewLocationData() {
-//
-//        LocationRequest locationRequest = new LocationRequest()
-//                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-//                .setInterval(0)
-//                .setFastestInterval(0)
-//                .setNumUpdates(1);
-//
-//        fusedLocationClient.requestLocationUpdates(
-//                locationRequest, locationCallback,
-//                Looper.myLooper()
-//        );
-//    }
-
-//    private LocationCallback locationCallback = new LocationCallback() {
-//        @Override
-//        public void onLocationResult(LocationResult locationResult) {
-////            if(swipeRefreshLayout.isRefreshing()) {
-////                swipeRefreshLayout.setRefreshing(false);
-////            }
-//            defaultLocation.setValue(
-//                    getLocationString(locationResult.getLastLocation()));
-//        }
-//    };
 
 }
