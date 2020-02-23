@@ -13,7 +13,7 @@ public class CityViewHolder extends RecyclerView.ViewHolder {
 
     public CityViewHolder(View itemView) {
         super(itemView);
-        textView = itemView.findViewById(R.id.list_item);
+        textView = itemView.findViewById(R.id.explore_list_item_textView);
     }
 
     public void bind(City city) {

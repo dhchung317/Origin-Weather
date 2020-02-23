@@ -2,55 +2,33 @@ package com.hyunki.origin_weather_app;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.Looper;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.hyunki.origin_weather_app.adapter.WeatherPagerAdapter;
-import com.hyunki.origin_weather_app.model.City;
-import com.hyunki.origin_weather_app.model.Forecast;
-import com.hyunki.origin_weather_app.model.util.TempUtil;
 import com.hyunki.origin_weather_app.viewmodel.SharedViewModel;
-import com.hyunki.origin_weather_app.viewmodel.State;
 
-import java.util.List;
-import java.util.Locale;
+import static com.hyunki.origin_weather_app.fragments.WeatherFragment.PERMISSION_ID;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = "main--";
 
-    public static final int PERMISSION_ID = 317;
-
     private SharedViewModel viewModel;
 
     private FusedLocationProviderClient fusedLocationClient;
-
-    private MutableLiveData<String> defaultLocation = new MutableLiveData<>();
 
     private ProgressBar progressBar;
     private SwipeRefreshLayout swipeRefreshLayout;
@@ -58,254 +36,151 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager2 viewPager;
     private WeatherPagerAdapter viewPagerAdapter;
 
-//icons - http://openweathermap.org/img/wn/ {10d} @2x.png
-
     @SuppressLint("CheckResult")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         progressBar = findViewById(R.id.progress_bar);
-        swipeRefreshLayout = findViewById(R.id.swiperefresh);
-
-        swipeRefreshLayout.setOnRefreshListener(() -> requestNewLocationData());
-
         viewModel = ViewModelProviders.of(this).get(SharedViewModel.class);
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        getLastLocation();
-
-        defaultLocation.observe(this, s -> {
-            viewModel.loadForecasts("london");
-            Log.d(TAG, "onCreate: location " + s);
-
-        });
-//        viewModel.getForecastLivedata().observe(this, state -> {
-//            renderForecast(state);
-//        });
-
+//        swipeRefreshLayout = findViewById(R.id.swiperefresh);
+//        swipeRefreshLayout.setOnRefreshListener(() -> requestNewLocationData());
         viewPager = findViewById(R.id.viewpager);
-        viewPagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager(),this.getLifecycle());
+        viewPagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager(), this.getLifecycle());
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout = findViewById(R.id.tabs);
-        new TabLayoutMediator(tabLayout,viewPager,
+        new TabLayoutMediator(tabLayout, viewPager,
                 (tab, position) -> {
-            if(position == 0){
-                tab.setText(R.string.tab_weather_label);
-            }else if(position == 1){
-                tab.setText(R.string.tab_explore_label);
-            }
+                    if (position == 0) {
+                        tab.setText(R.string.tab_weather_label);
+                    } else if (position == 1) {
+                        tab.setText(R.string.tab_explore_label);
+                    }
                 }).attach();
-
-//        viewModel.loadCities(getApplicationContext(),"citylist.json");
-//
-//        viewModel.getCitylivedata().observe(this, new Observer<State>() {
-//            @Override
-//            public void onChanged(State state) {
-//                renderCities(state);
-//            }
-//        });
-
     }
-
-    public void showSnackBar(View v, String message) {
-        // parametrised constructor
-
-        Snackbar.make(v, message,
-                Snackbar.LENGTH_SHORT)
-                .show();
-    }
-
-    public void showNetworkErrorSnack() {
-        showSnackBar(findViewById(R.id.coordinatorLayout), getString(R.string.network_error));
-    }
-
-    public void showLocationErrorSnack() {
-        showSnackBar(findViewById(R.id.coordinatorLayout), getString(R.string.location_error));
-    }
-
-    private void showProgressBar(boolean isVisible){
-
-        if(isVisible){
-            progressBar.setVisibility(View.VISIBLE);
-        }else{
-            progressBar.setVisibility(View.GONE);
-        }
-
-    }
-
-    private boolean checkPermissions() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
-        return false;
-    }
-
-    private boolean isLocationEnabled() {
-        LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
-                LocationManager.NETWORK_PROVIDER
-        );
-    }
-
-    @SuppressLint("MissingPermission")
-    private void getLastLocation() {
-        if (checkPermissions()) {
-            if (isLocationEnabled()) {
-                fusedLocationClient.getLastLocation().addOnCompleteListener(
-                        task -> {
-                            Location location = task.getResult();
-                            if (location != null) {
-                                Log.d(TAG, "getLastLocation: location succesful");
-                                defaultLocation.setValue(getLocationString(location));
-                            } else {
-                                showLocationErrorSnack();
-                            }
-                        });
-            }else{
-                showLocationErrorSnack();
-                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                startActivity(intent);
-            }
-        } else {
-            requestPermissions();
-        }
-    }
-
-    private String getLocationString(Location location) {
-        Geocoder gcd = new Geocoder(getBaseContext(),
-                Locale.getDefault());
-        Address address;
-        String locationString = "";
-        try {
-            address = gcd.getFromLocation(location.getLatitude(),location.getLongitude(),1).get(0);
-            String locality = address.getSubLocality();
-            String state = address.getAdminArea();
-            locationString = String.format("%s,%s", locality, state);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return locationString;
-    }
-
-    private void renderForecast(State state) {
-
-        if (state == State.Loading.INSTANCE) {
-            showProgressBar(true);
-            Log.d(TAG, "render: state was loading");
-
-        } else if (state == State.Error.INSTANCE) {
-            showProgressBar(false);
-            Log.d(TAG, "render: state error");
-            showNetworkErrorSnack();
-
-        } else if (state.getClass() == State.Success.class) {
-            showProgressBar(false);
-            Log.d(TAG, "render: state was success");
-            State.Success s = (State.Success) state;
-
-            for (Forecast f : (List<Forecast>) s.getAny()) {
-                Log.d(TAG, "render: successful" + f.getDate());
-            }
-
-            List<Forecast> forecasts = (List<Forecast>) s.getAny();
-            Forecast forecast = forecasts.get(0);
-
-            Log.d(TAG, "renderForecast: " + forecast.getTemp().getTemp());
-            Log.d(TAG, "renderForecast: " + TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTemp()));
-
-            int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTemp());
-//            tempTextView.setText((temp) + getString(R.string.degree_fahrenheit));
-//            locationTextView.setText(defaultLocation.getValue());
-//            String icon = forecasts.get(0).getWeather().get(0).getIcon();
-//            String iconUri = String.format("https://openweathermap.org/img/wn/%s@2x.png", icon);
-//            Picasso.get().load(iconUri).into(mainIcon);
-        }
-
-    }
-
-    private void renderCities(State state) {
-
-        if (state == State.Loading.INSTANCE) {
-            showProgressBar(true);
-            Log.d(TAG, "render: state was loading");
-
-        } else if (state == State.Error.INSTANCE) {
-            showProgressBar(false);
-            Log.d(TAG, "render: state error");
-            showNetworkErrorSnack();
-
-        } else if (state.getClass() == State.Success.class) {
-            showProgressBar(false);
-            Log.d(TAG, "render: state was success");
-            State.Success s = (State.Success) state;
-
-//            for(City c : (List<City>) s.getAny()){
-//                Log.d(TAG, "render: successful" + c.getName());
-//
-//            }
-            Log.d(TAG, "render: successful" + ((List<City>) s.getAny()).size());
-        }
-
-    }
-
-    @SuppressLint("MissingPermission")
-    private void requestNewLocationData() {
-
-        LocationRequest mLocationRequest = new LocationRequest()
-                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(0)
-                .setFastestInterval(0)
-                .setNumUpdates(1);
-
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        fusedLocationClient.requestLocationUpdates(
-                mLocationRequest, locationCallback,
-                Looper.myLooper()
-        );
-
-    }
-
-    private void requestPermissions() {
-        ActivityCompat.requestPermissions(
-                this,
-                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION},
-                PERMISSION_ID
-        );
-    }
-
-    private LocationCallback locationCallback = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            if(swipeRefreshLayout.isRefreshing()) {
-                swipeRefreshLayout.setRefreshing(false);
-            }
-            defaultLocation.setValue(
-                    getLocationString(
-                            locationResult.getLastLocation()));
-        }
-    };
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_ID) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                getLastLocation();
+                Log.d(TAG, "onRequestPermissionsResult: granted");
+                viewModel.loadLastLocation();
             }
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (checkPermissions()) {
-            getLastLocation();
-        }
-    }
+//    public void showSnackBar(View v, String message) {
+//        Snackbar.make(v, message,
+//                Snackbar.LENGTH_SHORT)
+//                .show();
+//    }
+//
+//
+//    private void showProgressBar(boolean isVisible) {
+//        if (isVisible) {
+//            progressBar.setVisibility(View.VISIBLE);
+//        } else {
+//            progressBar.setVisibility(View.GONE);
+//        }
+//    }
 
 
+//    @SuppressLint("MissingPermission")
+//    private void getLastLocation() {
+//        if (checkPermissions()) {
+//            if (isLocationEnabled()) {
+//                fusedLocationClient.getLastLocation().addOnCompleteListener(
+//                        task -> {
+//                            Location location = task.getResult();
+//                            if (location != null) {
+//                                Log.d(TAG, "getLastLocation: location succesful");
+//                                viewModel.getDefaultLocation().setValue(getLocationString(location));
+//                            } else {
+//                                showLocationErrorSnack();
+//                            }
+//                        });
+//            }else{
+//                showLocationErrorSnack();
+//                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+//                startActivity(intent);
+//            }
+//        } else {
+//            requestPermissions();
+//        }
+//    }
+    //refactor to call a method from viewmodel
+
+//    private String getLocationString(Location location) {
+//        Geocoder gcd = new Geocoder(getBaseContext(),
+//                Locale.getDefault());
+//        Address address;
+//        String locationString = "";
+//        try {
+//            address = gcd.getFromLocation(location.getLatitude(),location.getLongitude(),1).get(0);
+//            String locality = address.getSubLocality();
+//            String state = address.getAdminArea();
+//            locationString = String.format("%s,%s", locality, state);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return locationString;
+//    }
+
+//    @SuppressLint("MissingPermission")
+//    private void requestNewLocationData() {
+//
+//        LocationRequest locationRequest = new LocationRequest()
+//                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+//                .setInterval(0)
+//                .setFastestInterval(0)
+//                .setNumUpdates(1);
+//
+//        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+//        fusedLocationClient.requestLocationUpdates(
+//                locationRequest, locationCallback,
+//                Looper.myLooper()
+//        );
+//
+//    }
+
+
+//    private LocationCallback locationCallback = new LocationCallback() {
+//        @Override
+//        public void onLocationResult(LocationResult locationResult) {
+//            if(swipeRefreshLayout.isRefreshing()) {
+//                swipeRefreshLayout.setRefreshing(false);
+//            }
+//            defaultLocation.setValue(
+//                    getLocationString(locationResult.getLastLocation()));
+//        }
+//    };
+
+//    private void requestPermissions() {
+//        ActivityCompat.requestPermissions(
+//                this,
+//                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION},
+//                PERMISSION_ID
+//        );
+//    }
+//
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        if (requestCode == PERMISSION_ID) {
+//            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//
+//            }
+//        }
+//    }
+//
+//    @Override
+//    public void onResume() {
+//        super.onResume();
+//        if (checkPermissions()) {
+//            getLastLocation();
+//        }
+//    }
 }
 
 

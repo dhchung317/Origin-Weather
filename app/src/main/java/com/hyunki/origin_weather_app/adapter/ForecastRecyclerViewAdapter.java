@@ -21,7 +21,7 @@ public class ForecastRecyclerViewAdapter extends RecyclerView.Adapter<ForecastVi
 
     @Override
     public ForecastViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycler_view_list_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_weather, parent, false);
         return new ForecastViewHolder(view);
     }
 
@@ -38,5 +38,10 @@ public class ForecastRecyclerViewAdapter extends RecyclerView.Adapter<ForecastVi
     @Override
     public int getItemCount() {
         return forecasts.size();
+    }
+
+    public void setList(List<Forecast> forecasts){
+        this.forecasts = forecasts;
+        notifyDataSetChanged();
     }
 }

@@ -6,7 +6,7 @@
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="2">
+        android:layout_weight="5">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -14,7 +14,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/my_weather_location_textView"
+                android:id="@+id/explore_location_textView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="2"
@@ -22,14 +22,14 @@
                 android:textSize="24sp" />
 
             <ImageView
-                android:id="@+id/my_weather_locationIcon_imageView"
+                android:id="@+id/explore_locationIcon_imageView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="8"
                 android:layout_gravity="center" />
 
             <TextView
-                android:id="@+id/my_weather_temp_textView"
+                android:id="@+id/explore_temp_textView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="3"
@@ -39,10 +39,20 @@
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/my_weather_recycler_view"
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/explore_searchview"
+        android:layout_width="match_parent"
+        android:textSize="16sp"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp"
+        android:gravity="center"
+        android:elevation="10dp" />
+
+    <androidx.recyclerview.widget.RecyclerView android:id="@+id/explore_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3" />
+        android:layout_weight="6" />
 
 </LinearLayout>

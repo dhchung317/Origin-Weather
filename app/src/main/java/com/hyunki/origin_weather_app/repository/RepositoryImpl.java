@@ -23,12 +23,7 @@ public class RepositoryImpl implements Repository {
         return RetrofitFactory.getInstance()
                 .create(WeatherService.class)
                 .getResponse(location,API_KEY)
-                .map(new Function<WeatherResponse, List<Forecast>>() {
-                    @Override
-                    public List<Forecast> apply(WeatherResponse weatherResponse) throws Exception {
-                        return weatherResponse.getList();
-                    }
-                });
+                .map(weatherResponse -> weatherResponse.getList());
     }
 
     @Override
