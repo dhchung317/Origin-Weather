@@ -5,4 +5,5 @@
     <string name="tab_weather_label">My Weather</string>
     <string name="tab_explore_label">Explore</string>
     <string name="degree_fahrenheit">℉</string>
+    <string name="today_in">Today in</string>
 </resources>

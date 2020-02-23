@@ -146,7 +146,8 @@ public class WeatherFragment extends Fragment {
 
             int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTemp());
             tempTextView.setText((temp) + getString(R.string.degree_fahrenheit));
-            locationTextView.setText(myLocation);
+
+            locationTextView.setText(getActivity().getString(R.string.today_in) + " " + myLocation);
             String icon = forecasts.get(0).getWeather().get(0).getIcon();
 
             String iconUri = String.format("https://openweathermap.org/img/wn/%s@2x.png", icon);

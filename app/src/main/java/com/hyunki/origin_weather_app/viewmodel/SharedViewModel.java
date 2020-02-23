@@ -121,37 +121,37 @@ public class SharedViewModel extends AndroidViewModel {
             address = gcd.getFromLocation(location.getLatitude(),location.getLongitude(),1).get(0);
             String locality = address.getSubLocality();
             String state = address.getAdminArea();
-            locationString = String.format("%s,%s", locality, state);
+            locationString = String.format("%s, %s", locality, state);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return locationString;
     }
 
-    @SuppressLint("MissingPermission")
-    private void requestNewLocationData() {
+//    @SuppressLint("MissingPermission")
+//    private void requestNewLocationData() {
+//
+//        LocationRequest locationRequest = new LocationRequest()
+//                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+//                .setInterval(0)
+//                .setFastestInterval(0)
+//                .setNumUpdates(1);
+//
+//        fusedLocationClient.requestLocationUpdates(
+//                locationRequest, locationCallback,
+//                Looper.myLooper()
+//        );
+//    }
 
-        LocationRequest locationRequest = new LocationRequest()
-                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-                .setInterval(0)
-                .setFastestInterval(0)
-                .setNumUpdates(1);
-
-        fusedLocationClient.requestLocationUpdates(
-                locationRequest, locationCallback,
-                Looper.myLooper()
-        );
-    }
-
-    private LocationCallback locationCallback = new LocationCallback() {
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-//            if(swipeRefreshLayout.isRefreshing()) {
-//                swipeRefreshLayout.setRefreshing(false);
-//            }
-            defaultLocation.setValue(
-                    getLocationString(locationResult.getLastLocation()));
-        }
-    };
+//    private LocationCallback locationCallback = new LocationCallback() {
+//        @Override
+//        public void onLocationResult(LocationResult locationResult) {
+////            if(swipeRefreshLayout.isRefreshing()) {
+////                swipeRefreshLayout.setRefreshing(false);
+////            }
+//            defaultLocation.setValue(
+//                    getLocationString(locationResult.getLastLocation()));
+//        }
+//    };
 
 }
