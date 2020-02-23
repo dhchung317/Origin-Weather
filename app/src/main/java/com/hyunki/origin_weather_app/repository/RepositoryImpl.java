@@ -22,8 +22,24 @@ public class RepositoryImpl implements Repository {
     public Observable<List<Forecast>> getForecasts(String location) {
         return RetrofitFactory.getInstance()
                 .create(WeatherService.class)
-                .getResponse(location,API_KEY)
+                .getResponse(location,null,API_KEY)
                 .map(weatherResponse -> weatherResponse.getList());
+    }
+
+    @Override
+    public Observable<List<Forecast>> getForecastsById(String id) {
+        return RetrofitFactory.getInstance()
+                .create(WeatherService.class)
+                .getResponse(null,id,API_KEY)
+                .map(weatherResponse -> weatherResponse.getList());
+    }
+
+    @Override
+    public Observable<City> getCityById(String id) {
+        return RetrofitFactory.getInstance()
+                .create(WeatherService.class)
+                .getResponse(null,id,API_KEY)
+                .map(weatherResponse -> weatherResponse.getCity());
     }
 
     @Override

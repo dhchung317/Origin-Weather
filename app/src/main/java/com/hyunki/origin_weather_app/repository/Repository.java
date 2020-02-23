@@ -14,6 +14,10 @@ public interface Repository {
 
     Observable<List<Forecast>> getForecasts(String location);
 
+    Observable<List<Forecast>> getForecastsById(String id);
+
+    Observable<City> getCityById(String id);
+
     City[] getCities(Context context, String filename);
 
 }
