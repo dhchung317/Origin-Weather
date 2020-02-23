@@ -11,4 +11,10 @@ public class WeatherResponse {
     public List<Forecast> getList() {
         return list;
     }
+
+    public City city;
+
+    public City getCity() {
+        return city;
+    }
 }

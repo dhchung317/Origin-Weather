@@ -5,42 +5,55 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.hyunki.origin_weather_app.R;
 import com.hyunki.origin_weather_app.adapter.CityRecyclerViewAdapter;
-import com.hyunki.origin_weather_app.adapter.ForecastRecyclerViewAdapter;
 import com.hyunki.origin_weather_app.model.City;
+import com.hyunki.origin_weather_app.model.Forecast;
+import com.hyunki.origin_weather_app.model.util.TempUtil;
 import com.hyunki.origin_weather_app.viewmodel.SharedViewModel;
 import com.hyunki.origin_weather_app.viewmodel.State;
+import com.squareup.picasso.Picasso;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class ExploreFragment extends Fragment {
+import io.reactivex.Observable;
+
+public class ExploreFragment extends Fragment implements SearchView.OnQueryTextListener {
     public static final String TAG = "explore-fragment";
 
     private SharedViewModel viewModel;
+
     private ProgressBar progressBar;
+
     private RecyclerView exploreRecyclerView;
     private CityRecyclerViewAdapter cityRecyclerViewAdapter;
+
+    private ImageView weatherIcon;
+    private TextView tempTextView;
+    private TextView locationTextView;
+    SearchView searchView;
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         viewModel = ViewModelProviders.of(getActivity()).get(SharedViewModel.class);
         progressBar = getActivity().findViewById(R.id.progress_bar);
-        viewModel.loadCities(getActivity().getApplicationContext(),"citylist.json");
-        viewModel.getCitylivedata().observe(getViewLifecycleOwner(), state -> renderCities(state));
+        viewModel.loadCities(getActivity().getApplicationContext(), "citylist.json");
 
+        viewModel.getCityLiveData().observe(getViewLifecycleOwner(), state -> renderCities(state));
+        viewModel.getSingleCityLiveData().observe(getViewLifecycleOwner(), state -> renderSingleCity(state));
+        viewModel.getExploredForecastLiveData().observe(getViewLifecycleOwner(), state -> renderForecast(state));
     }
 
     @Nullable
@@ -53,10 +66,14 @@ public class ExploreFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        searchView = view.findViewById(R.id.explore_searchview);
+        searchView.setOnQueryTextListener(this);
+
+        weatherIcon = view.findViewById(R.id.explore_locationIcon_imageView);
+        tempTextView = view.findViewById(R.id.explore_temp_textView);
+        locationTextView = view.findViewById(R.id.explore_location_textView);
 
         cityRecyclerViewAdapter = new CityRecyclerViewAdapter(new City[0]);
-
-
         exploreRecyclerView = view.findViewById(R.id.explore_recycler_view);
         exploreRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         exploreRecyclerView.setAdapter(cityRecyclerViewAdapter);
@@ -80,6 +97,7 @@ public class ExploreFragment extends Fragment {
             City[] cities = (City[]) ((State.Success) state).getAny();
 
             cityRecyclerViewAdapter.setList(cities);
+            cityRecyclerViewAdapter.setFilteredList(cities);
 //            for(City c : (List<City>) s.getAny()){
 //                Log.d(TAG, "render: successful" + c.getName());
 //
@@ -89,13 +107,89 @@ public class ExploreFragment extends Fragment {
 
     }
 
-    private void showProgressBar(boolean isVisible){
+    private void renderForecast(State state) {
 
-        if(isVisible){
+        if (state == State.Loading.INSTANCE) {
+            showProgressBar(true);
+            Log.d(TAG, "render: state was loading");
+
+        } else if (state == State.Error.INSTANCE) {
+            showProgressBar(false);
+            Log.d(TAG, "render: state error");
+
+        } else if (state.getClass() == State.Success.class) {
+            showProgressBar(false);
+            Log.d(TAG, "render: state was success");
+            State.Success s = (State.Success) state;
+
+            List<Forecast> forecasts = (List<Forecast>) s.getAny();
+            Forecast forecast = forecasts.get(0);
+
+            Log.d(TAG, "renderForecast: " + forecast.getTemp().getTemp());
+            Log.d(TAG, "renderForecast: " + TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTemp()));
+
+            int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTemp());
+            tempTextView.setText((temp) + getString(R.string.degree_fahrenheit));
+
+            Log.d(TAG, "renderForecast: " + forecast.getDate());
+            String icon = forecasts.get(0).getWeather().get(0).getIcon();
+
+            String iconUri = String.format("https://openweathermap.org/img/wn/%s@2x.png", icon);
+            Picasso.get().load(iconUri).into(weatherIcon);
+
+            Log.d(TAG, "render: successful" + ((List<Forecast>) s.getAny()).size());
+        }
+    }
+
+    private void renderSingleCity(State state) {
+        if (state == State.Loading.INSTANCE) {
+            showProgressBar(true);
+            Log.d(TAG, "render: state was loading");
+
+        } else if (state == State.Error.INSTANCE) {
+            showProgressBar(false);
+            Log.d(TAG, "render: state error");
+
+        } else if (state.getClass() == State.Success.class) {
+            showProgressBar(false);
+            Log.d(TAG, "render: state was success");
+            State.Success s = (State.Success) state;
+
+            City city = (City) s.getAny();
+
+            locationTextView.setText(city.getName());
+        }
+    }
+
+    private void showProgressBar(boolean isVisible) {
+
+        if (isVisible) {
             progressBar.setVisibility(View.VISIBLE);
-        }else{
+        } else {
             progressBar.setVisibility(View.GONE);
         }
 
     }
+
+    @Override
+    public boolean onQueryTextSubmit(String s) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String s) {
+        cityRecyclerViewAdapter.setFilteredList(cityRecyclerViewAdapter.getCityList());
+
+        Observable.fromArray(cityRecyclerViewAdapter.getCityList())
+                .filter(city -> city.getName().toLowerCase().startsWith(s.toLowerCase()))
+//                .filter(state -> (s.length() > 1) && state.name.toLowerCase().contains(s.toLowerCase()))
+                .toList().subscribe(cities -> {
+            City[] cityList = cities.toArray(new City[cities.size()]);
+            Log.d(TAG, "onQueryTextChange: " + cities.size());
+            cityRecyclerViewAdapter.setFilteredList(cityList);
+        });
+        return false;
+    }
+
+
 }

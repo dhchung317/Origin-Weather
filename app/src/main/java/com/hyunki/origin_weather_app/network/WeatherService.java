@@ -11,5 +11,6 @@ public interface WeatherService {
 
     @GET("/data/2.5/forecast/")
     Observable<WeatherResponse> getResponse(@Query("q") String location,
+                                      @Query("id") String locationId,
                                       @Query("appid") String apiKey);
 }

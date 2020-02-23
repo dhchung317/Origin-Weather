@@ -35,5 +35,9 @@ public class WeatherPagerAdapter extends FragmentStateAdapter {
         return 2;
     }
 
+    @Override
+    public long getItemId(int position) {
+        return super.getItemId(position);
+    }
 }
 

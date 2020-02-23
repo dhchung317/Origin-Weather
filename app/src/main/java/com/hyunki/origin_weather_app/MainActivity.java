@@ -2,6 +2,7 @@ package com.hyunki.origin_weather_app;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.FragmentTransaction;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,19 +20,21 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.hyunki.origin_weather_app.adapter.WeatherPagerAdapter;
+import com.hyunki.origin_weather_app.controller.CityClickListener;
+import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.viewmodel.SharedViewModel;
 
 import static com.hyunki.origin_weather_app.fragments.WeatherFragment.PERMISSION_ID;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements CityClickListener {
     public static final String TAG = "main--";
 
     private SharedViewModel viewModel;
 
-    private FusedLocationProviderClient fusedLocationClient;
+//    private FusedLocationProviderClient fusedLocationClient;
 
     private ProgressBar progressBar;
-    private SwipeRefreshLayout swipeRefreshLayout;
+//    private SwipeRefreshLayout swipeRefreshLayout;
     private TabLayout tabLayout;
     private ViewPager2 viewPager;
     private WeatherPagerAdapter viewPagerAdapter;
@@ -68,6 +71,12 @@ public class MainActivity extends AppCompatActivity {
                 viewModel.loadLastLocation();
             }
         }
+    }
+
+    @Override
+    public void refreshFragmentWithCityInfo(City city) {
+        viewModel.loadSingleCityById(String.valueOf(city.getId()));
+        viewModel.loadForecastsById(String.valueOf(city.getId()));
     }
 
 //    public void showSnackBar(View v, String message) {
