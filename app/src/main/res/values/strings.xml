@@ -9,4 +9,5 @@
     <string name="today_in">Today in</string>
     <string name="explore_title">EXPLORE THE WEATHER</string>
     <string name="login">Sign In</string>
+    <string name="sign_in_with_google">Sign In With Google</string>
 </resources>

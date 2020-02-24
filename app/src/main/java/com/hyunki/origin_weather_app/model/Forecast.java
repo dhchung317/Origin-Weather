@@ -5,7 +5,6 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 public class Forecast {
-
     @SerializedName("main")
     private Temp temp;
 
@@ -25,6 +24,4 @@ public class Forecast {
     public String getDate() {
         return dt_txt;
     }
-
-
 }

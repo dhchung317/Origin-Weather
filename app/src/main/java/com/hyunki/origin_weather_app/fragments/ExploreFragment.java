@@ -1,21 +1,25 @@
 package com.hyunki.origin_weather_app.fragments;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.hyunki.origin_weather_app.R;
 import com.hyunki.origin_weather_app.adapter.CityRecyclerViewAdapter;
 import com.hyunki.origin_weather_app.model.City;
@@ -32,6 +36,10 @@ import io.reactivex.Observable;
 public class ExploreFragment extends BaseFragment implements SearchView.OnQueryTextListener {
     public static final String TAG = "explore-fragment";
 
+    private FirebaseAuth auth;
+
+    private FirebaseAuth.AuthStateListener authListener;
+
     private SharedViewModel viewModel;
 
     private ProgressBar progressBar;
@@ -39,6 +47,7 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
     private RecyclerView exploreRecyclerView;
     private CityRecyclerViewAdapter cityRecyclerViewAdapter;
 
+    private ImageButton favoriteButton;
     private ImageView weatherIcon;
     private TextView tempTextView;
     private TextView locationTextView;
@@ -49,7 +58,7 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
+        auth = FirebaseAuth.getInstance();
         viewModel = ViewModelProviders.of(getActivity()).get(SharedViewModel.class);
 
         progressBar = getActivity().findViewById(R.id.progress_bar);
@@ -59,8 +68,18 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
         viewModel.getCityLiveData().observe(getViewLifecycleOwner(), state -> renderCities(state));
         viewModel.getSingleCityLiveData().observe(getViewLifecycleOwner(), state -> renderSingleCity(state));
         viewModel.getExploredForecastLiveData().observe(getViewLifecycleOwner(), state -> renderForecast(state));
-    }
 
+        authListener = firebaseAuth -> {
+            if(firebaseAuth.getCurrentUser() != null){
+
+                initButton();
+            }else{
+                hideButton();
+            }
+        };
+
+        auth.addAuthStateListener(authListener);
+    }
 
     @Nullable
     @Override
@@ -83,6 +102,23 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
         exploreRecyclerView = view.findViewById(R.id.explore_recycler_view);
         exploreRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         exploreRecyclerView.setAdapter(cityRecyclerViewAdapter);
+        favoriteButton = view.findViewById(R.id.favorite_button);
+
+    }
+
+    private void initButton(){
+        Log.d(TAG, "initButton: reached");
+        favoriteButton.setVisibility(View.VISIBLE);
+        favoriteButton.setImageResource(R.drawable.ic_favorite_border);
+        favoriteButton.setTag(R.drawable.ic_favorite_border);
+        favoriteButton.setOnClickListener(view -> {
+            toggleFavoriteButton();
+        });
+    }
+
+    private void hideButton(){
+        favoriteButton.setVisibility(View.GONE);
+        favoriteButton.setOnClickListener(null);
     }
 
     private void renderCities(State state) {
@@ -176,7 +212,17 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
         } else {
             progressBar.setVisibility(View.GONE);
         }
+    }
 
+    private void toggleFavoriteButton(){
+
+        if((int)favoriteButton.getTag() == R.drawable.ic_favorite_border){
+            favoriteButton.setTag(R.drawable.ic_favorite);
+            favoriteButton.setImageResource(R.drawable.ic_favorite);
+        }else{
+            favoriteButton.setTag(R.drawable.ic_favorite_border);
+            favoriteButton.setImageResource(R.drawable.ic_favorite_border);
+        }
     }
 
     @Override

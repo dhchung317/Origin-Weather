@@ -53,8 +53,14 @@
         </LinearLayout>
 
         <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/favorite_button"
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:layout_gravity="bottom|right"
+            android:layout_margin="16dp"
+            android:src="@drawable/ic_favorite_border"
+            android:background="@color/fui_transparent"
+            android:visibility="invisible"/>
     </androidx.cardview.widget.CardView>
 
     <androidx.appcompat.widget.SearchView
