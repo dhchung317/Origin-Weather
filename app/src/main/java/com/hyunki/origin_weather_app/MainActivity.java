@@ -140,8 +140,16 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
 //        TODO- Styling is key!
 //        Bonus:
 //        TODO- Be able to save certain cities you’re interested in (or visit frequently),
-//         and have that data present from a navigation pwerspective.
+//         and have that data present from a navigation perspective.
 //        TODO- Present a few future days of generic (less-defined) weather for a city
+
+//TODO- parse the dates in forecast list to show only unique days
+//TODO- overall color scheme and styling of app
+//TODO- navigation drawer that displays favorites, available to signed in users
+
+//TODO- rebuild the model and api call to get one day in metric
+
+//TODO EXTRA- show the extended forecast throughout each day by time
 
 //Certificate fingerprints:
 //	 MD5:  88:56:84:2E:DF:4D:43:67:4F:52:3E:0D:64:70:96:E6

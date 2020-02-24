@@ -44,6 +44,7 @@ public class AuthActivity extends AppCompatActivity implements View.OnClickListe
         authListener = firebaseAuth -> {
             if (firebaseAuth.getCurrentUser() != null) {
                 //start activity/fragment
+                Log.d(TAG, "onCreate: " + auth.getCurrentUser().getUid());
                 onAuthSuccess();
             }
         };
@@ -171,6 +172,7 @@ public class AuthActivity extends AppCompatActivity implements View.OnClickListe
         super.onBackPressed();
         finish();
     }
+
 }
 
 
