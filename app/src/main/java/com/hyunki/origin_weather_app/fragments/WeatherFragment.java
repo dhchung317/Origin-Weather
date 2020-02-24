@@ -74,7 +74,6 @@ public class WeatherFragment extends BaseFragment {
         } else {
             requestPermissions();
         }
-
         viewModel.getForecastLivedata().observe(getViewLifecycleOwner(), state -> renderForecast(state));
     }
 
@@ -102,7 +101,6 @@ public class WeatherFragment extends BaseFragment {
         weatherRecyclerView = view.findViewById(R.id.my_weather_recycler_view);
         weatherRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.HORIZONTAL, false));
         weatherRecyclerView.setAdapter(forecastRecyclerViewAdapter);
-
     }
 
     private void renderForecast(State state) {

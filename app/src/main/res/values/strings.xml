@@ -4,7 +4,9 @@
     <string name="location_error">could not get location. check network settings</string>
     <string name="tab_weather_label">My Weather</string>
     <string name="tab_explore_label">Explore</string>
+    <string name="tab_favorites_label"></string>
     <string name="degree_fahrenheit">℉</string>
     <string name="today_in">Today in</string>
     <string name="explore_title">EXPLORE THE WEATHER</string>
+    <string name="login">Sign In</string>
 </resources>

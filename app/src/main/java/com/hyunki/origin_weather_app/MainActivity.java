@@ -1,18 +1,24 @@
 package com.hyunki.origin_weather_app;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ProgressBar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.firebase.auth.FirebaseAuth;
 import com.hyunki.origin_weather_app.adapter.WeatherPagerAdapter;
 import com.hyunki.origin_weather_app.controller.CityClickListener;
 import com.hyunki.origin_weather_app.model.City;
@@ -22,6 +28,8 @@ import static com.hyunki.origin_weather_app.fragments.WeatherFragment.PERMISSION
 
 public class MainActivity extends AppCompatActivity implements CityClickListener {
     public static final String TAG = "main--";
+
+    private FirebaseAuth auth;
 
     private SharedViewModel viewModel;
 
@@ -34,6 +42,12 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        invalidateOptionsMenu();
+
+        auth = FirebaseAuth.getInstance();
 
         viewModel = ViewModelProviders.of(this).get(SharedViewModel.class);
 
@@ -67,6 +81,55 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
     public void refreshFragmentWithCityInfo(City city) {
         viewModel.loadSingleCityById(String.valueOf(city.getId()));
         viewModel.loadForecastsById(String.valueOf(city.getId()));
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getTitle().toString()) {
+
+            case "Sign In": {
+                Log.d(TAG, "onOptionsItemSelected: item selected");
+                showLoginActivity();
+            }
+
+            case "Sign Out": {
+                revokeAccess();
+            }
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.login_switch);
+
+        if (auth.getCurrentUser() != null) {
+            item.setTitle("Sign Out");
+        } else {
+            item.setTitle("Sign In");
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    private void showLoginActivity() {
+        Intent intent = new Intent(this, AuthActivity.class);
+        startActivity(intent);
+
+    }
+
+    private void revokeAccess() {
+        // Firebase sign out
+        auth.signOut();
+
+        //update ui
     }
 }
 
