@@ -19,4 +19,8 @@ public class City {
     public String getCountry() {
         return country;
     }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

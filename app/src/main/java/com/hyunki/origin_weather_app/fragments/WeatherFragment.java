@@ -74,6 +74,7 @@ public class WeatherFragment extends BaseFragment {
         } else {
             requestPermissions();
         }
+
         viewModel.getForecastLivedata().observe(getViewLifecycleOwner(), state -> renderForecast(state));
     }
 
@@ -182,16 +183,18 @@ public class WeatherFragment extends BaseFragment {
         );
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_ID) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "onRequestPermissionsResult: granted");
-                viewModel.loadLastLocation();
-            }
-        }
-    }
+
+
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        if (requestCode == PERMISSION_ID) {
+//            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                Log.d(TAG, "onRequestPermissionsResult: granted");
+//                viewModel.loadLastLocation();
+//            }
+//        }
+//    }
 
     @Override
     public void onResume() {
@@ -200,4 +203,5 @@ public class WeatherFragment extends BaseFragment {
             viewModel.loadLastLocation();
         }
     }
+
 }

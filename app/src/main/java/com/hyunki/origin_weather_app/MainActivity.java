@@ -1,28 +1,41 @@
 package com.hyunki.origin_weather_app;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ListView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.auth.FirebaseAuth;
+import com.hyunki.origin_weather_app.adapter.FavoritesAdapter;
 import com.hyunki.origin_weather_app.adapter.WeatherPagerAdapter;
 import com.hyunki.origin_weather_app.controller.CityClickListener;
 import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.viewmodel.SharedViewModel;
+
+import java.util.ArrayList;
 
 import static com.hyunki.origin_weather_app.fragments.WeatherFragment.PERMISSION_ID;
 
@@ -33,9 +46,15 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
 
     private SharedViewModel viewModel;
 
+    private DrawerLayout drawerLayout;
+    private ActionBarDrawerToggle t;
+    private NavigationView navigationView;
+
     private TabLayout tabLayout;
     private ViewPager2 viewPager;
     private WeatherPagerAdapter viewPagerAdapter;
+
+    private ListView favoriteCitiesListView;
 
     @SuppressLint("CheckResult")
     @Override
@@ -43,9 +62,23 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        favoriteCitiesListView = findViewById(R.id.favorite_cities_list_view);
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         invalidateOptionsMenu();
+
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+
+        t = new ActionBarDrawerToggle(this, drawerLayout, R.string.open, R.string.close);
+
+        drawerLayout.addDrawerListener(t);
+        t.syncState();
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        navigationView = findViewById(R.id.nav_view);
 
         auth = FirebaseAuth.getInstance();
 
@@ -64,6 +97,41 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
                         tab.setText(R.string.tab_explore_label);
                     }
                 }).attach();
+
+        // Construct the data source
+        ArrayList<City> dummyArray = new ArrayList<>();
+
+        City city = new City();
+        city.setName("Brooklyn");
+        City city2 = new City();
+        city2.setName("Seoul");
+        City city3 = new City();
+        city3.setName("London");
+
+        dummyArray.add(city);
+        dummyArray.add(city2);
+        dummyArray.add(city3);
+
+// Create the adapter to convert the array to views
+        FavoritesAdapter adapter = new FavoritesAdapter(this, dummyArray);
+// Attach the adapter to a ListView
+        ListView listView = findViewById(R.id.favorite_cities_list_view);
+        listView.setAdapter(adapter);
+
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+
+            if (id == R.id.nav_favorites) {
+                toggleFavoritesList();
+            }
+
+            if (item.isChecked()){
+                item.setChecked(false);
+            }else{
+                item.setChecked(true);
+            }
+            return true;
+        });
     }
 
     @Override
@@ -72,13 +140,13 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         if (requestCode == PERMISSION_ID) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Log.d(TAG, "onRequestPermissionsResult: granted");
-                viewModel.loadLastLocation();
+                viewModel.requestNewLocationData();
             }
         }
     }
 
     @Override
-    public void refreshFragmentWithCityInfo(City city) {
+    public void updateFragmentWithCityInfo(City city) {
         viewModel.loadSingleCityById(String.valueOf(city.getId()));
         viewModel.loadForecastsById(String.valueOf(city.getId()));
     }
@@ -104,6 +172,10 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
             }
             return true;
         }
+
+        if(t.onOptionsItemSelected(item)){
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -119,6 +191,16 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         return super.onPrepareOptionsMenu(menu);
     }
 
+    private boolean toggleFavoritesList(){
+        if(favoriteCitiesListView.getVisibility() == View.GONE){
+            favoriteCitiesListView.setVisibility(View.VISIBLE);
+            return true;
+        }else{
+            favoriteCitiesListView.setVisibility(View.GONE);
+            return false;
+        }
+    }
+
     private void showLoginActivity() {
         Intent intent = new Intent(this, AuthActivity.class);
         startActivity(intent);
@@ -131,6 +213,7 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
 
         //update ui
     }
+
 }
 
 //        TODO- Displays users location and local weather (in Fahrenheit) upon opening app
@@ -146,10 +229,12 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
 //TODO- parse the dates in forecast list to show only unique days
 //TODO- overall color scheme and styling of app
 //TODO- navigation drawer that displays favorites, available to signed in users
+//TODO- functionality to save favorites by user, (use firebase storage)
 
-//TODO- rebuild the model and api call to get one day in metric
+//TODO MAYBE- rebuild the model and api call to get one day in metric
 
 //TODO EXTRA- show the extended forecast throughout each day by time
+
 
 //Certificate fingerprints:
 //	 MD5:  88:56:84:2E:DF:4D:43:67:4F:52:3E:0D:64:70:96:E6

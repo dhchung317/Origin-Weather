@@ -54,6 +54,7 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
     private SearchView searchView;
 
     private String default_id = "";
+    private City default_city = new City();
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -71,8 +72,8 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
 
         authListener = firebaseAuth -> {
             if(firebaseAuth.getCurrentUser() != null){
-
                 initButton();
+                refresh();
             }else{
                 hideButton();
             }
@@ -108,7 +109,6 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
 
     private void initButton(){
         Log.d(TAG, "initButton: reached");
-        favoriteButton.setVisibility(View.VISIBLE);
         favoriteButton.setImageResource(R.drawable.ic_favorite_border);
         favoriteButton.setTag(R.drawable.ic_favorite_border);
         favoriteButton.setOnClickListener(view -> {
@@ -177,6 +177,10 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
             Picasso.get().load(iconUri).into(weatherIcon);
 
             Log.d(TAG, "render: successful" + ((List<Forecast>) s.getAny()).size());
+
+            if(auth.getCurrentUser() != null){
+                favoriteButton.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -197,6 +201,7 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
             City city = (City) s.getAny();
 
             default_id = city.getName();
+            default_city = city;
 
             locationTextView.setText(city.getName());
             if(searchView.hasFocus()) {
@@ -215,6 +220,11 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
     }
 
     private void toggleFavoriteButton(){
+        //TODO- change logic to work with a database
+        // two methods? when a city is loaded, check to see if it is in favorites,
+        // if not it will be an empty button, if it is it will display filled one.
+        // then when you click the button, you need to check if it is in the set or not.
+        // if it is, remove from set and refresh view. if not add and refresh view.
 
         if((int)favoriteButton.getTag() == R.drawable.ic_favorite_border){
             favoriteButton.setTag(R.drawable.ic_favorite);
@@ -249,8 +259,9 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
     @Override
     void refresh() {
         if(!default_id.isEmpty()){
-            viewModel.loadSingleCityById(String.valueOf(default_id));
-            viewModel.loadForecastsById(String.valueOf(default_id));
+            viewModel.loadSingleCityById(String.valueOf(default_city.getId()));
+            Log.d(TAG, "refresh: " + default_id);
+            viewModel.loadForecastsById(String.valueOf(default_city.getId()));
         }
     }
 }

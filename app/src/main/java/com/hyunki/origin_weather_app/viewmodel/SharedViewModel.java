@@ -1,10 +1,12 @@
 package com.hyunki.origin_weather_app.viewmodel;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -12,6 +14,9 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.repository.RepositoryImpl;
@@ -125,6 +130,30 @@ public class SharedViewModel extends AndroidViewModel {
                     }
                 });
     }
+
+    @SuppressLint("MissingPermission")
+    public void requestNewLocationData(){
+
+        LocationRequest mLocationRequest = new LocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(0);
+        mLocationRequest.setFastestInterval(0);
+        mLocationRequest.setNumUpdates(1);
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication());
+        fusedLocationClient.requestLocationUpdates(
+                mLocationRequest, mLocationCallback,
+                Looper.myLooper()
+        );
+
+    }
+
+    private LocationCallback mLocationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            defaultLocation.setValue(getLocationString(locationResult.getLocations().get(0)));
+        }
+    };
 
 
     public MutableLiveData<State> getForecastLivedata() {
