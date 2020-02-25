@@ -193,15 +193,15 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
     }
 }
 
-//        TODO- Displays users location and local weather (in Fahrenheit) upon opening app
-//        TODO- Present detailed weather conditions (rain, sleet, sunny, etc.) with strong attention to design
-//        TODO- Allows users to search for weather in other cities
-//        TODO- Allow users to be able to register and login using Firebase api
-//        TODO- Styling is key!
-//        Bonus:
-//        TODO- Be able to save certain cities you’re interested in (or visit frequently),
-//         and have that data present from a navigation perspective.
-//        TODO- Present a few future days of generic (less-defined) weather for a city
+// TODO- Displays users location and local weather (in Fahrenheit) upon opening app
+// TODO- Present detailed weather conditions (rain, sleet, sunny, etc.) with strong attention to design
+// TODO- Allows users to search for weather in other cities
+// TODO- Allow users to be able to register and login using Firebase api
+// TODO- Styling is key!
+//  Bonus:
+// TODO- Be able to save certain cities you’re interested in (or visit frequently),
+//  and have that data present from a navigation perspective.
+// TODO- Present a few future days of generic (less-defined) weather for a city
 
 //TODO- parse the dates in forecast list to show only unique days
 //TODO- overall color scheme and styling of app

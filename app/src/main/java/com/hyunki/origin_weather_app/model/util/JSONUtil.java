@@ -12,13 +12,11 @@ import java.util.ArrayList;
 
 
 public class JSONUtil {
-    private static final String TAG = "jsonutil";
 
     public static ArrayList<City> cityJSONtoJACKSON(Context context, String filename){
         ObjectMapper mapper = new ObjectMapper();
         ArrayList<City> cities = null;
         try {
-            Log.d(TAG, "cityJSONtoJACKSON: trying");
             mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
             cities = mapper.readValue(context.getAssets().open(filename),
                     mapper.getTypeFactory().constructCollectionType(ArrayList.class, City.class));

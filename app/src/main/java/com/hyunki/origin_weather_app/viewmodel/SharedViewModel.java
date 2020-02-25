@@ -19,9 +19,13 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.hyunki.origin_weather_app.model.Forecast;
 import com.hyunki.origin_weather_app.repository.RepositoryImpl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -56,6 +60,10 @@ public class SharedViewModel extends AndroidViewModel {
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(forecasts -> {
+                            for(Forecast f : forecasts){
+                                Log.d(TAG, "loadForecasts: " + f.getDate());
+                            }
+                                    forecasts = excludeMultipleForecastsOfDate(forecasts);
                                     forecastLiveData.setValue(new State.Success.OnForecastsLoaded(forecasts));
                                 },
                                 throwable -> {
@@ -102,9 +110,6 @@ public class SharedViewModel extends AndroidViewModel {
                 Observable.just(repository.getCities(context, filename))
                         .subscribeOn(Schedulers.computation())
                         .observeOn(AndroidSchedulers.mainThread())
-//                        .flatMapIterable(cities -> Arrays.asList(cities))
-////                        .take(10000)
-//                        .toList()
                         .subscribe(cities -> cityLiveData.setValue(new State.Success.OnCitiesLoaded(cities)),
                                 throwable -> {
                                     Log.e(TAG, "loadCities: ", throwable);
@@ -114,13 +119,10 @@ public class SharedViewModel extends AndroidViewModel {
     }
 
     public void loadLastLocation() {
-        Log.d(TAG, "loadLastLocation: ran");
-
         defaultLocation.setValue(State.Loading.INSTANCE);
         fusedLocationClient.getLastLocation().addOnCompleteListener(
                 task -> {
                     Location location = task.getResult();
-//                    Log.d(TAG, "loadLastLocation: " + location.getLatitude());
                     if (location != null) {
                         Log.d(TAG, "getLastLocation: location succesful " + getLocationString(location));
                         defaultLocation.setValue(
@@ -132,7 +134,6 @@ public class SharedViewModel extends AndroidViewModel {
 
     @SuppressLint("MissingPermission")
     public void requestNewLocationData() {
-
         LocationRequest locationRequest = new LocationRequest();
         locationRequest
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
@@ -191,6 +192,19 @@ public class SharedViewModel extends AndroidViewModel {
             e.printStackTrace();
         }
         return locationString;
+    }
+
+    private ArrayList<Forecast> excludeMultipleForecastsOfDate(ArrayList<Forecast> forecasts){
+        Set<String> dates = new HashSet<>();
+        ArrayList<Forecast> returningForecasts = new ArrayList<>();
+        for (int i = 0; i < forecasts.size(); i++) {
+            Forecast forecast = forecasts.get(i);
+            if(!dates.contains(forecast.getDate().substring(0,10))){
+                returningForecasts.add(forecast);
+                dates.add(forecast.getDate().substring(0,10));
+            }
+        }
+        return returningForecasts;
     }
 
 }

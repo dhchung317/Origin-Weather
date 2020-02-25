@@ -3,7 +3,6 @@ package com.hyunki.origin_weather_app.model;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class Forecast {
     @SerializedName("main")

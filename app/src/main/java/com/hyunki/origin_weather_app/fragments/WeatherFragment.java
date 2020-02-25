@@ -39,7 +39,6 @@ import java.util.Locale;
 import java.util.Objects;
 
 public class WeatherFragment extends BaseFragment {
-    private static final String TAG = "weather-fragment";
     public static final int PERMISSION_ID = 317;
 
     private SharedViewModel viewModel;
@@ -68,11 +67,7 @@ public class WeatherFragment extends BaseFragment {
             requestPermissions();
         }
 
-        viewModel.getDefaultLocation().observe(getViewLifecycleOwner(), s -> {
-            onLocationLoaded(s);
-            Log.d(TAG, "onCreate: location ");
-        });
-
+        viewModel.getDefaultLocation().observe(getViewLifecycleOwner(), this::onLocationLoaded);
         viewModel.getForecastLiveData().observe(getViewLifecycleOwner(), this::renderForecast);
     }
 
@@ -105,67 +100,54 @@ public class WeatherFragment extends BaseFragment {
 
         if (state == State.Loading.INSTANCE) {
             showProgressBar(true);
-            Log.d(TAG, "renderFOrecast: state was loading");
 
         } else if (state == State.Error.INSTANCE) {
             showProgressBar(false);
-            Log.d(TAG, "renderforcast: state error");
             showNetworkErrorSnack();
 
         } else if (state.getClass() == State.Success.OnForecastsLoaded.class) {
             showProgressBar(false);
-            Log.d(TAG, "renderfprecast: state was success");
             State.Success.OnForecastsLoaded s = (State.Success.OnForecastsLoaded) state;
 
-            forecastRecyclerViewAdapter.setList(s.getForecasts());
             List<Forecast> forecasts = s.getForecasts();
-            Forecast forecast = forecasts.get(0);
+            Forecast forecast = forecasts.remove(0);
+            forecastRecyclerViewAdapter.setList(s.getForecasts());
 
-            Log.d(TAG, "renderForecast: " + forecast.getTemp().getTempKelvin());
-            Log.d(TAG, "renderForecast: " + TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTempKelvin()));
 
             int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTempKelvin());
             tempTextView.setText(String.format(
-                    Locale.US,"%d%s", temp,
+                    Locale.US, "%d%s", temp,
                     Objects.requireNonNull(getContext()).getString(R.string.degree_fahrenheit)));
 
             locationTextView.setText(String.format("%s %s",
                     Objects.requireNonNull(getActivity())
-                    .getString(R.string.today_in), myLocation));
-            String icon = forecasts.get(0).getWeather().get(0).getIcon();
+                            .getString(R.string.today_in), myLocation));
 
+            String icon = forecasts.get(0).getWeather().get(0).getIcon();
             String iconUri = String.format("https://openweathermap.org/img/wn/%s@2x.png", icon);
             Picasso.get().load(iconUri).into(weatherIcon);
         }
     }
 
-    private void onLocationLoaded(State state){
+    private void onLocationLoaded(State state) {
         if (state == State.Loading.INSTANCE) {
             showProgressBar(true);
-            Log.d(TAG, "renderlocaiton: state was loading");
 
         } else if (state == State.Error.INSTANCE) {
             showProgressBar(false);
-            Log.d(TAG, "rendelocationr: state error");
             showNetworkErrorSnack();
 
         } else if (state.getClass() == State.Success.OnDefaultLocationLoaded.class) {
-
             showProgressBar(false);
-            Log.d(TAG, "renderLocation: success");
             State.Success.OnDefaultLocationLoaded s = (State.Success.OnDefaultLocationLoaded) state;
             myLocation = s.getCityString();
             viewModel.loadForecasts(s.getCityString());
         }
-
     }
 
     private boolean checkPermissions() {
-        if (ActivityCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            return true;
-        }
-        return false;
+        return ActivityCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
     private boolean isLocationEnabled() {
@@ -177,7 +159,7 @@ public class WeatherFragment extends BaseFragment {
 
     private void requestPermissions() {
         ActivityCompat.requestPermissions(
-                Objects.requireNonNull(getActivity(),getString(R.string.require_non_null_activity)),
+                Objects.requireNonNull(getActivity(), getString(R.string.require_non_null_activity)),
                 new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION},
                 PERMISSION_ID
         );
@@ -190,5 +172,4 @@ public class WeatherFragment extends BaseFragment {
             viewModel.loadLastLocation();
         }
     }
-
 }

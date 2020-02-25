@@ -7,10 +7,6 @@ sealed class State {
 
     object Loading : State()
 
-//    data class Success(
-//            val any : Any
-//    ) : State()
-
     object Error : State()
 
     sealed class Success : State() {

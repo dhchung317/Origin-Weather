@@ -6,10 +6,8 @@ import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.model.Forecast;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import io.reactivex.Observable;
-import io.reactivex.Single;
 
 public interface Repository {
 
