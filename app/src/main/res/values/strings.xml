@@ -12,4 +12,9 @@
     <string name="sign_in_with_google">Sign In With Google</string>
     <string name="open">open</string>
     <string name="close">close</string>
+    <string name="require_non_null_activity">activity cannot be null</string>
+    <string name="menu_item_sign_in">Sign In</string>
+    <string name="menu_item_sign_out">Sign Out</string>
+    <string name="google_sign_in_authentication_failed">Authentication failed</string>
+    <string name="google_sign_in_failed">Google sign in failed</string>
 </resources>

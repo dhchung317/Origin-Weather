@@ -4,7 +4,6 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -12,13 +11,15 @@ import com.hyunki.origin_weather_app.R;
 import com.hyunki.origin_weather_app.controller.CityClickListener;
 import com.hyunki.origin_weather_app.model.City;
 
+import java.util.ArrayList;
+
 public class CityRecyclerViewAdapter extends RecyclerView.Adapter<CityViewHolder> {
 
-    City[] cities;
-    City[] filteredList=new City[0];
-    CityClickListener listener;
+    private ArrayList<City> cities;
+    private ArrayList<City> filteredList = new ArrayList<>();
+    private CityClickListener listener;
 
-    public CityRecyclerViewAdapter(City[] cities) {
+    public CityRecyclerViewAdapter(ArrayList<City> cities) {
         this.cities = cities;
     }
 
@@ -37,8 +38,8 @@ public class CityRecyclerViewAdapter extends RecyclerView.Adapter<CityViewHolder
 
     @Override
     public void onBindViewHolder(CityViewHolder holder, int position) {
-        if(filteredList.length > position) {
-            holder.bind(filteredList[position], listener);
+        if (filteredList.size() > position) {
+            holder.bind(filteredList.get(position), listener);
         }
     }
 
@@ -49,19 +50,19 @@ public class CityRecyclerViewAdapter extends RecyclerView.Adapter<CityViewHolder
 
     @Override
     public int getItemCount() {
-        return filteredList.length;
+        return filteredList.size();
     }
 
-    public void setList(City[] cities){
+    public void setList(ArrayList<City> cities) {
         this.cities = cities;
     }
 
-    public void setFilteredList(City[] cities) {
+    public void setFilteredList(ArrayList<City> cities) {
         this.filteredList = cities;
         notifyDataSetChanged();
     }
 
-    public City[] getCityList(){
+    public ArrayList<City> getCityList() {
         return cities;
     }
 }

@@ -3,7 +3,6 @@ package com.hyunki.origin_weather_app.network;
 import com.hyunki.origin_weather_app.model.WeatherResponse;
 
 import io.reactivex.Observable;
-import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 

@@ -11,6 +11,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -18,35 +19,34 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.hyunki.origin_weather_app.model.City;
+import com.hyunki.origin_weather_app.model.Forecast;
 import com.hyunki.origin_weather_app.repository.RepositoryImpl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Locale;
-import java.util.concurrent.Callable;
+import java.util.Set;
 
 import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class SharedViewModel extends AndroidViewModel {
-    public static final String TAG = "mainviewmodel";
+    private static final String TAG = "mainviewmodel";
 
     private FusedLocationProviderClient fusedLocationClient
             = LocationServices.getFusedLocationProviderClient(getApplication().getApplicationContext());
 
-    final RepositoryImpl repository = new RepositoryImpl();
+    private final RepositoryImpl repository = new RepositoryImpl();
 
     private CompositeDisposable disposable = new CompositeDisposable();
 
-    private MutableLiveData<State> forecastLiveData = new MutableLiveData();
-    private MutableLiveData<State> exploredForecastLiveData = new MutableLiveData();
-
-    private MutableLiveData<State> cityLiveData = new MutableLiveData();
-    private MutableLiveData<State> singleCityLiveData = new MutableLiveData();
-
-    private MutableLiveData<String> defaultLocation = new MutableLiveData<>();
+    private MutableLiveData<State> forecastLiveData = new MutableLiveData<>();
+    private MutableLiveData<State> exploredForecastLiveData = new MutableLiveData<>();
+    private MutableLiveData<State> cityLiveData = new MutableLiveData<>();
+    private MutableLiveData<State> singleCityLiveData = new MutableLiveData<>();
+    private MutableLiveData<State> defaultLocation = new MutableLiveData<>();
 
     public SharedViewModel(@NonNull Application application) {
         super(application);
@@ -59,13 +59,17 @@ public class SharedViewModel extends AndroidViewModel {
                 repository.getForecasts(location)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .doOnError(throwable -> {
-                            Log.e(TAG, "getForecasts: ", throwable);
-                            forecastLiveData.setValue(State.Error.INSTANCE);
-                        })
                         .subscribe(forecasts -> {
-                            forecastLiveData.setValue(new State.Success(forecasts));
-                        })
+                            for(Forecast f : forecasts){
+                                Log.d(TAG, "loadForecasts: " + f.getDate());
+                            }
+                                    forecasts = excludeMultipleForecastsOfDate(forecasts);
+                                    forecastLiveData.setValue(new State.Success.OnForecastsLoaded(forecasts));
+                                },
+                                throwable -> {
+                                    Log.e(TAG, "getForecasts: ", throwable);
+                                    forecastLiveData.setValue(State.Error.INSTANCE);
+                                })
         );
     }
 
@@ -76,14 +80,13 @@ public class SharedViewModel extends AndroidViewModel {
                 repository.getForecastsById(id)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .doOnError(throwable -> {
-                            Log.e(TAG, "getForecasts: ", throwable);
-                            forecastLiveData.setValue(State.Error.INSTANCE);
-                        })
                         .subscribe(forecasts -> {
-                            exploredForecastLiveData.setValue(new State.Success(forecasts));
-
-                        })
+                                    exploredForecastLiveData.setValue(new State.Success.OnForecastsByIdLoaded(forecasts));
+                                },
+                                throwable -> {
+                                    Log.e(TAG, "getForecasts: ", throwable);
+                                    forecastLiveData.setValue(State.Error.INSTANCE);
+                                })
         );
     }
 
@@ -93,90 +96,91 @@ public class SharedViewModel extends AndroidViewModel {
                 repository.getCityById(id)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .doOnError(throwable -> {
-                            Log.e(TAG, "getsinglecity: ", throwable);
-                            singleCityLiveData.setValue(State.Error.INSTANCE);
-                        })
-                        .subscribe(city -> singleCityLiveData.setValue(new State.Success(city)))
+                        .subscribe(city -> singleCityLiveData.setValue(new State.Success.OnCityByIdLoaded(city)),
+                                throwable -> {
+                                    Log.e(TAG, "getsinglecity: ", throwable);
+                                    singleCityLiveData.setValue(State.Error.INSTANCE);
+                                })
         );
     }
 
     public void loadCities(Context context, String filename) {
         cityLiveData.setValue(State.Loading.INSTANCE);
         disposable.add(
-                Observable.defer(
-                        (Callable<ObservableSource<City[]>>) () -> Observable.just(repository.getCities(context, filename)))
+                Observable.just(repository.getCities(context, filename))
                         .subscribeOn(Schedulers.computation())
                         .observeOn(AndroidSchedulers.mainThread())
-//                        .flatMapIterable(cities -> Arrays.asList(cities))
-////                        .take(10000)
-//                        .toList()
-                        .doOnError(throwable -> {
-                            Log.e(TAG, "loadCities: ", throwable);
-                        }).subscribe(cities -> cityLiveData.setValue(new State.Success(cities)))
+                        .subscribe(cities -> cityLiveData.setValue(new State.Success.OnCitiesLoaded(cities)),
+                                throwable -> {
+                                    Log.e(TAG, "loadCities: ", throwable);
+                                    cityLiveData.setValue(State.Error.INSTANCE);
+                                })
         );
     }
 
     public void loadLastLocation() {
-        Log.d(TAG, "loadLastLocation: ran");
-
+        defaultLocation.setValue(State.Loading.INSTANCE);
         fusedLocationClient.getLastLocation().addOnCompleteListener(
                 task -> {
                     Location location = task.getResult();
-//                    Log.d(TAG, "loadLastLocation: " + location.getLatitude());
                     if (location != null) {
-                        Log.d(TAG, "getLastLocation: location succesful");
-                        defaultLocation.setValue(getLocationString(location));
+                        Log.d(TAG, "getLastLocation: location succesful " + getLocationString(location));
+                        defaultLocation.setValue(
+                                new State.Success.OnDefaultLocationLoaded(
+                                        getLocationString(location)));
                     }
                 });
     }
 
     @SuppressLint("MissingPermission")
-    public void requestNewLocationData(){
-
-        LocationRequest mLocationRequest = new LocationRequest();
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setInterval(0);
-        mLocationRequest.setFastestInterval(0);
-        mLocationRequest.setNumUpdates(1);
+    public void requestNewLocationData() {
+        LocationRequest locationRequest = new LocationRequest();
+        locationRequest
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(0)
+                .setFastestInterval(0)
+                .setNumUpdates(1);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(getApplication());
         fusedLocationClient.requestLocationUpdates(
-                mLocationRequest, mLocationCallback,
+                locationRequest, locationCallback,
                 Looper.myLooper()
         );
 
     }
 
-    private LocationCallback mLocationCallback = new LocationCallback() {
+    private LocationCallback locationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
-            defaultLocation.setValue(getLocationString(locationResult.getLocations().get(0)));
+            Log.d(TAG, "onLocationResult: ran");
+            String location = getLocationString(locationResult.getLocations().get(0));
+            Log.d(TAG, "onLocationResult: " + location);
+            defaultLocation.setValue(
+                    new State.Success.OnDefaultLocationLoaded(location));
         }
     };
 
 
-    public MutableLiveData<State> getForecastLivedata() {
+    public LiveData<State> getForecastLiveData() {
         return forecastLiveData;
     }
 
-    public MutableLiveData<State> getCityLiveData() {
+    public LiveData<State> getCityLiveData() {
         return cityLiveData;
     }
 
-    public MutableLiveData<String> getDefaultLocation() {
+    public LiveData<State> getDefaultLocation() {
         return defaultLocation;
     }
 
-    public MutableLiveData<State> getExploredForecastLiveData(){return exploredForecastLiveData;}
+    public LiveData<State> getExploredForecastLiveData() { return exploredForecastLiveData; }
 
-    public MutableLiveData<State> getSingleCityLiveData() {
+    public LiveData<State> getSingleCityLiveData() {
         return singleCityLiveData;
     }
 
     private String getLocationString(Location location) {
-        Geocoder gcd = new Geocoder(getApplication(),
-                Locale.getDefault());
+        Geocoder gcd = new Geocoder(getApplication(), Locale.getDefault());
         Address address;
         String locationString = "";
         try {
@@ -188,6 +192,19 @@ public class SharedViewModel extends AndroidViewModel {
             e.printStackTrace();
         }
         return locationString;
+    }
+
+    private ArrayList<Forecast> excludeMultipleForecastsOfDate(ArrayList<Forecast> forecasts){
+        Set<String> dates = new HashSet<>();
+        ArrayList<Forecast> returningForecasts = new ArrayList<>();
+        for (int i = 0; i < forecasts.size(); i++) {
+            Forecast forecast = forecasts.get(i);
+            if(!dates.contains(forecast.getDate().substring(0,10))){
+                returningForecasts.add(forecast);
+                dates.add(forecast.getDate().substring(0,10));
+            }
+        }
+        return returningForecasts;
     }
 
 }

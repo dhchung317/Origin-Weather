@@ -2,9 +2,7 @@ package com.hyunki.origin_weather_app.adapter;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.lifecycle.Lifecycle;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
@@ -12,7 +10,6 @@ import com.hyunki.origin_weather_app.fragments.ExploreFragment;
 import com.hyunki.origin_weather_app.fragments.WeatherFragment;
 
 public class WeatherPagerAdapter extends FragmentStateAdapter {
-
 
     public WeatherPagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle) {
         super(fragmentManager, lifecycle);

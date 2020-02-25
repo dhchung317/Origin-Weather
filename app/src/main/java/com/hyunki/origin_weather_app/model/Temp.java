@@ -4,15 +4,15 @@ import com.google.gson.annotations.SerializedName;
 
 public class Temp {
     @SerializedName("temp")
-    double temp;
+    private double temp;
 
     @SerializedName("temp_min")
-    double temp_min;
+    private double temp_min;
 
     @SerializedName("temp_max")
-    double temp_max;
+    private double temp_max;
 
-    public double getTemp() {
+    public double getTempKelvin() {
         return temp;
     }
 

@@ -9,16 +9,19 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.hyunki.origin_weather_app.R;
 import com.hyunki.origin_weather_app.model.Forecast;
 
-import java.util.List;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
 
 public class ForecastRecyclerViewAdapter extends RecyclerView.Adapter<ForecastViewHolder> {
 
-    List<Forecast> forecasts;
+    private ArrayList<Forecast> forecasts;
 
-    public ForecastRecyclerViewAdapter(List<Forecast> forecasts) {
+    public ForecastRecyclerViewAdapter(ArrayList<Forecast> forecasts) {
         this.forecasts = forecasts;
     }
 
+    @NotNull
     @Override
     public ForecastViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_weather, parent, false);
@@ -40,7 +43,7 @@ public class ForecastRecyclerViewAdapter extends RecyclerView.Adapter<ForecastVi
         return forecasts.size();
     }
 
-    public void setList(List<Forecast> forecasts){
+    public void setList(ArrayList<Forecast> forecasts) {
         this.forecasts = forecasts;
         notifyDataSetChanged();
     }

@@ -1,7 +1,5 @@
 package com.hyunki.origin_weather_app.fragments;
 
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,7 +10,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProviders;
@@ -29,22 +26,21 @@ import com.hyunki.origin_weather_app.viewmodel.SharedViewModel;
 import com.hyunki.origin_weather_app.viewmodel.State;
 import com.squareup.picasso.Picasso;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 import io.reactivex.Observable;
 
 public class ExploreFragment extends BaseFragment implements SearchView.OnQueryTextListener {
-    public static final String TAG = "explore-fragment";
-
     private FirebaseAuth auth;
-
     private FirebaseAuth.AuthStateListener authListener;
 
     private SharedViewModel viewModel;
 
-    private ProgressBar progressBar;
-
-    private RecyclerView exploreRecyclerView;
     private CityRecyclerViewAdapter cityRecyclerViewAdapter;
 
     private ImageButton favoriteButton;
@@ -53,32 +49,29 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
     private TextView locationTextView;
     private SearchView searchView;
 
-    private String default_id = "";
+    private String default_city_name = "";
     private City default_city = new City();
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         auth = FirebaseAuth.getInstance();
-        viewModel = ViewModelProviders.of(getActivity()).get(SharedViewModel.class);
 
-        progressBar = getActivity().findViewById(R.id.progress_bar);
+        viewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(SharedViewModel.class);
 
         viewModel.loadCities(getActivity().getApplicationContext(), "citylist.json");
-
-        viewModel.getCityLiveData().observe(getViewLifecycleOwner(), state -> renderCities(state));
-        viewModel.getSingleCityLiveData().observe(getViewLifecycleOwner(), state -> renderSingleCity(state));
-        viewModel.getExploredForecastLiveData().observe(getViewLifecycleOwner(), state -> renderForecast(state));
+        viewModel.getCityLiveData().observe(getViewLifecycleOwner(), this::renderCities);
+        viewModel.getSingleCityLiveData().observe(getViewLifecycleOwner(), this::renderSingleCity);
+        viewModel.getExploredForecastLiveData().observe(getViewLifecycleOwner(), this::renderForecast);
 
         authListener = firebaseAuth -> {
-            if(firebaseAuth.getCurrentUser() != null){
+            if (firebaseAuth.getCurrentUser() != null) {
                 initButton();
                 refresh();
-            }else{
+            } else {
                 hideButton();
             }
         };
-
         auth.addAuthStateListener(authListener);
     }
 
@@ -90,7 +83,7 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         searchView = view.findViewById(R.id.explore_searchview);
         searchView.setOnQueryTextListener(this);
@@ -99,16 +92,14 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
         tempTextView = view.findViewById(R.id.explore_temp_textView);
         locationTextView = view.findViewById(R.id.explore_location_textView);
 
-        cityRecyclerViewAdapter = new CityRecyclerViewAdapter(new City[0]);
-        exploreRecyclerView = view.findViewById(R.id.explore_recycler_view);
+        cityRecyclerViewAdapter = new CityRecyclerViewAdapter(new ArrayList<>());
+        RecyclerView exploreRecyclerView = view.findViewById(R.id.explore_recycler_view);
         exploreRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         exploreRecyclerView.setAdapter(cityRecyclerViewAdapter);
         favoriteButton = view.findViewById(R.id.favorite_button);
-
     }
 
-    private void initButton(){
-        Log.d(TAG, "initButton: reached");
+    private void initButton() {
         favoriteButton.setImageResource(R.drawable.ic_favorite_border);
         favoriteButton.setTag(R.drawable.ic_favorite_border);
         favoriteButton.setOnClickListener(view -> {
@@ -116,7 +107,7 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
         });
     }
 
-    private void hideButton(){
+    private void hideButton() {
         favoriteButton.setVisibility(View.GONE);
         favoriteButton.setOnClickListener(null);
     }
@@ -125,23 +116,17 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
 
         if (state == State.Loading.INSTANCE) {
             showProgressBar(true);
-            Log.d(TAG, "render: state was loading");
 
         } else if (state == State.Error.INSTANCE) {
             showProgressBar(false);
-            Log.d(TAG, "render: state error");
+            showNetworkErrorSnack();
 
-        } else if (state.getClass() == State.Success.class) {
+        } else if (state.getClass() == State.Success.OnCitiesLoaded.class) {
             showProgressBar(false);
-            Log.d(TAG, "render: state was success");
-            State.Success s = (State.Success) state;
-
-            City[] cities = (City[]) ((State.Success) state).getAny();
-
+            State.Success.OnCitiesLoaded s = (State.Success.OnCitiesLoaded) state;
+            ArrayList<City> cities = s.getCities();
             cityRecyclerViewAdapter.setList(cities);
             cityRecyclerViewAdapter.setFilteredList(cities);
-
-            Log.d(TAG, "render: successful" + ((City[]) s.getAny()).length);
         }
 
     }
@@ -150,35 +135,26 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
 
         if (state == State.Loading.INSTANCE) {
             showProgressBar(true);
-            Log.d(TAG, "render: state was loading");
 
         } else if (state == State.Error.INSTANCE) {
             showProgressBar(false);
-            Log.d(TAG, "render: state error");
+            showNetworkErrorSnack();
 
-        } else if (state.getClass() == State.Success.class) {
+        } else if (state.getClass() == State.Success.OnForecastsByIdLoaded.class) {
             showProgressBar(false);
-            Log.d(TAG, "render: state was success");
-            State.Success s = (State.Success) state;
+            State.Success.OnForecastsByIdLoaded s = (State.Success.OnForecastsByIdLoaded) state;
 
-            List<Forecast> forecasts = (List<Forecast>) s.getAny();
+            List<Forecast> forecasts = s.getForecasts();
             Forecast forecast = forecasts.get(0);
 
-            Log.d(TAG, "renderForecast: " + forecast.getTemp().getTemp());
-            Log.d(TAG, "renderForecast: " + TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTemp()));
+            int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTempKelvin());
+            tempTextView.setText(String.format(Locale.US,"%d%s", temp, getString(R.string.degree_fahrenheit)));
 
-            int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTemp());
-            tempTextView.setText((temp) + getString(R.string.degree_fahrenheit));
-
-            Log.d(TAG, "renderForecast: " + forecast.getDate());
             String icon = forecasts.get(0).getWeather().get(0).getIcon();
-
             String iconUri = String.format("https://openweathermap.org/img/wn/%s@2x.png", icon);
             Picasso.get().load(iconUri).into(weatherIcon);
 
-            Log.d(TAG, "render: successful" + ((List<Forecast>) s.getAny()).size());
-
-            if(auth.getCurrentUser() != null){
+            if (auth.getCurrentUser() != null) {
                 favoriteButton.setVisibility(View.VISIBLE);
             }
         }
@@ -187,49 +163,37 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
     private void renderSingleCity(State state) {
         if (state == State.Loading.INSTANCE) {
             showProgressBar(true);
-            Log.d(TAG, "render: state was loading");
 
         } else if (state == State.Error.INSTANCE) {
             showProgressBar(false);
-            Log.d(TAG, "render: state error");
+            showNetworkErrorSnack();
 
-        } else if (state.getClass() == State.Success.class) {
+        } else if (state.getClass() == State.Success.OnCityByIdLoaded.class) {
             showProgressBar(false);
-            Log.d(TAG, "render: state was success");
-            State.Success s = (State.Success) state;
+            State.Success.OnCityByIdLoaded s = (State.Success.OnCityByIdLoaded) state;
 
-            City city = (City) s.getAny();
-
-            default_id = city.getName();
+            City city = s.getCity();
+            default_city_name = city.getName();
             default_city = city;
 
             locationTextView.setText(city.getName());
-            if(searchView.hasFocus()) {
+            if (searchView.hasFocus()) {
                 searchView.clearFocus();
             }
         }
     }
 
-    private void showProgressBar(boolean isVisible) {
-
-        if (isVisible) {
-            progressBar.setVisibility(View.VISIBLE);
-        } else {
-            progressBar.setVisibility(View.GONE);
-        }
-    }
-
-    private void toggleFavoriteButton(){
+    private void toggleFavoriteButton() {
         //TODO- change logic to work with a database
         // two methods? when a city is loaded, check to see if it is in favorites,
         // if not it will be an empty button, if it is it will display filled one.
         // then when you click the button, you need to check if it is in the set or not.
         // if it is, remove from set and refresh view. if not add and refresh view.
 
-        if((int)favoriteButton.getTag() == R.drawable.ic_favorite_border){
+        if ((int) favoriteButton.getTag() == R.drawable.ic_favorite_border) {
             favoriteButton.setTag(R.drawable.ic_favorite);
             favoriteButton.setImageResource(R.drawable.ic_favorite);
-        }else{
+        } else {
             favoriteButton.setTag(R.drawable.ic_favorite_border);
             favoriteButton.setImageResource(R.drawable.ic_favorite_border);
         }
@@ -244,23 +208,23 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
     @Override
     public boolean onQueryTextChange(String s) {
         cityRecyclerViewAdapter.setFilteredList(cityRecyclerViewAdapter.getCityList());
-
-        Observable.fromArray(cityRecyclerViewAdapter.getCityList())
+        Observable.fromIterable(cityRecyclerViewAdapter.getCityList())
                 .filter(city -> city.getName().toLowerCase().startsWith(s.toLowerCase()))
-//                .filter(state -> (s.length() > 1) && state.name.toLowerCase().contains(s.toLowerCase()))
-                .toList().subscribe(cities -> {
-            City[] cityList = cities.toArray(new City[cities.size()]);
-            Log.d(TAG, "onQueryTextChange: " + cities.size());
-            cityRecyclerViewAdapter.setFilteredList(cityList);
-        }).dispose();
+                .toList().subscribe(
+                cities -> {
+                    cityRecyclerViewAdapter.setList(new ArrayList<>(cities));
+                },
+
+                throwable -> {
+                })
+                .dispose();
         return false;
     }
 
     @Override
     void refresh() {
-        if(!default_id.isEmpty()){
+        if (!default_city_name.isEmpty()) {
             viewModel.loadSingleCityById(String.valueOf(default_city.getId()));
-            Log.d(TAG, "refresh: " + default_id);
             viewModel.loadForecastsById(String.valueOf(default_city.getId()));
         }
     }

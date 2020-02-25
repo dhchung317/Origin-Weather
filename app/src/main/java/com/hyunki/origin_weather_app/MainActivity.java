@@ -3,9 +3,7 @@ package com.hyunki.origin_weather_app;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
-import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -21,10 +19,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
@@ -35,24 +29,20 @@ import com.hyunki.origin_weather_app.controller.CityClickListener;
 import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.viewmodel.SharedViewModel;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
+import java.util.Objects;
 
 import static com.hyunki.origin_weather_app.fragments.WeatherFragment.PERMISSION_ID;
 
 public class MainActivity extends AppCompatActivity implements CityClickListener {
-    public static final String TAG = "main--";
 
     private FirebaseAuth auth;
 
     private SharedViewModel viewModel;
 
-    private DrawerLayout drawerLayout;
-    private ActionBarDrawerToggle t;
-    private NavigationView navigationView;
-
-    private TabLayout tabLayout;
-    private ViewPager2 viewPager;
-    private WeatherPagerAdapter viewPagerAdapter;
+    private ActionBarDrawerToggle actionBarDrawerToggle;
 
     private ListView favoriteCitiesListView;
 
@@ -68,15 +58,15 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         setSupportActionBar(toolbar);
         invalidateOptionsMenu();
 
-        drawerLayout = findViewById(R.id.drawer_layout);
-        navigationView = findViewById(R.id.nav_view);
+        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+        NavigationView navigationView;
 
-        t = new ActionBarDrawerToggle(this, drawerLayout, R.string.open, R.string.close);
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.open, R.string.close);
 
-        drawerLayout.addDrawerListener(t);
-        t.syncState();
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.syncState();
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         navigationView = findViewById(R.id.nav_view);
 
@@ -84,11 +74,12 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
 
         viewModel = ViewModelProviders.of(this).get(SharedViewModel.class);
 
-        viewPager = findViewById(R.id.viewpager);
-        viewPagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager(), this.getLifecycle());
+        ViewPager2 viewPager = findViewById(R.id.viewpager);
+        viewPager.setUserInputEnabled(false);
+        WeatherPagerAdapter viewPagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager(), this.getLifecycle());
         viewPager.setAdapter(viewPagerAdapter);
 
-        tabLayout = findViewById(R.id.tabs);
+        TabLayout tabLayout = findViewById(R.id.tabs);
         new TabLayoutMediator(tabLayout, viewPager,
                 (tab, position) -> {
                     if (position == 0) {
@@ -112,19 +103,14 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         dummyArray.add(city2);
         dummyArray.add(city3);
 
-// Create the adapter to convert the array to views
         FavoritesAdapter adapter = new FavoritesAdapter(this, dummyArray);
-// Attach the adapter to a ListView
-        ListView listView = findViewById(R.id.favorite_cities_list_view);
-        listView.setAdapter(adapter);
+        favoriteCitiesListView.setAdapter(adapter);
 
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
-
             if (id == R.id.nav_favorites) {
                 toggleFavoritesList();
             }
-
             if (item.isChecked()){
                 item.setChecked(false);
             }else{
@@ -135,11 +121,10 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, @NotNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_ID) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "onRequestPermissionsResult: granted");
                 viewModel.requestNewLocationData();
             }
         }
@@ -163,7 +148,6 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         switch (item.getTitle().toString()) {
 
             case "Sign In": {
-                Log.d(TAG, "onOptionsItemSelected: item selected");
                 showLoginActivity();
             }
 
@@ -173,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
             return true;
         }
 
-        if(t.onOptionsItemSelected(item)){
+        if(actionBarDrawerToggle.onOptionsItemSelected(item)){
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -184,47 +168,40 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         MenuItem item = menu.findItem(R.id.login_switch);
 
         if (auth.getCurrentUser() != null) {
-            item.setTitle("Sign Out");
+            item.setTitle(getString(R.string.menu_item_sign_out));
         } else {
-            item.setTitle("Sign In");
+            item.setTitle(getString(R.string.menu_item_sign_in));
         }
         return super.onPrepareOptionsMenu(menu);
     }
 
-    private boolean toggleFavoritesList(){
+    private void toggleFavoritesList(){
         if(favoriteCitiesListView.getVisibility() == View.GONE){
             favoriteCitiesListView.setVisibility(View.VISIBLE);
-            return true;
         }else{
             favoriteCitiesListView.setVisibility(View.GONE);
-            return false;
         }
     }
 
     private void showLoginActivity() {
         Intent intent = new Intent(this, AuthActivity.class);
         startActivity(intent);
-
     }
 
     private void revokeAccess() {
-        // Firebase sign out
         auth.signOut();
-
-        //update ui
     }
-
 }
 
-//        TODO- Displays users location and local weather (in Fahrenheit) upon opening app
-//        TODO- Present detailed weather conditions (rain, sleet, sunny, etc.) with strong attention to design
-//        TODO- Allows users to search for weather in other cities
-//        TODO- Allow users to be able to register and login using Firebase api
-//        TODO- Styling is key!
-//        Bonus:
-//        TODO- Be able to save certain cities you’re interested in (or visit frequently),
-//         and have that data present from a navigation perspective.
-//        TODO- Present a few future days of generic (less-defined) weather for a city
+// TODO- Displays users location and local weather (in Fahrenheit) upon opening app
+// TODO- Present detailed weather conditions (rain, sleet, sunny, etc.) with strong attention to design
+// TODO- Allows users to search for weather in other cities
+// TODO- Allow users to be able to register and login using Firebase api
+// TODO- Styling is key!
+//  Bonus:
+// TODO- Be able to save certain cities you’re interested in (or visit frequently),
+//  and have that data present from a navigation perspective.
+// TODO- Present a few future days of generic (less-defined) weather for a city
 
 //TODO- parse the dates in forecast list to show only unique days
 //TODO- overall color scheme and styling of app

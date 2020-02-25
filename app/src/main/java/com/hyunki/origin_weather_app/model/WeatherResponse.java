@@ -2,13 +2,13 @@ package com.hyunki.origin_weather_app.model;
 
 import com.google.gson.annotations.SerializedName;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class WeatherResponse {
     @SerializedName("list")
-    private List<Forecast> list;
+    private ArrayList<Forecast> list;
 
-    public List<Forecast> getList() {
+    public ArrayList<Forecast> getList() {
         return list;
     }
 
