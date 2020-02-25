@@ -14,7 +14,7 @@ import com.hyunki.origin_weather_app.model.City;
 
 public class CityRecyclerViewAdapter extends RecyclerView.Adapter<CityViewHolder> {
 
-    City[] cities= new City[0];
+    City[] cities;
     City[] filteredList=new City[0];
     CityClickListener listener;
 
@@ -37,7 +37,9 @@ public class CityRecyclerViewAdapter extends RecyclerView.Adapter<CityViewHolder
 
     @Override
     public void onBindViewHolder(CityViewHolder holder, int position) {
-        holder.bind(filteredList[position],listener);
+        if(filteredList.length > position) {
+            holder.bind(filteredList[position], listener);
+        }
     }
 
     @Override
@@ -47,7 +49,7 @@ public class CityRecyclerViewAdapter extends RecyclerView.Adapter<CityViewHolder
 
     @Override
     public int getItemCount() {
-        return cities.length;
+        return filteredList.length;
     }
 
     public void setList(City[] cities){

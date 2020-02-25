@@ -2,7 +2,7 @@
 
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="300dp"
-    android:layout_height="300dp"
+    android:layout_height="match_parent"
     android:layout_margin="8dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:cardBackgroundColor="@color/colorAccent"
@@ -17,9 +17,10 @@
             android:id="@+id/my_weather_list_item_date_textView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="2"
+            android:layout_weight="4"
             android:textAlignment="center"
-            android:textSize="48sp" />
+            android:textSize="38sp"
+            android:layout_marginTop="8dp"/>
 
         <ImageView
             android:id="@+id/my_weather_list_item_imageView"
@@ -32,9 +33,9 @@
             android:id="@+id/my_weather_list_item_condition_textView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="2"
+            android:layout_weight="3"
             android:textAlignment="center"
-            android:textSize="36sp" />
+            android:textSize="24sp" />
 
         <TextView
             android:id="@+id/my_weather_list_item_condition_detail_textView"
@@ -42,7 +43,7 @@
             android:layout_height="0dp"
             android:layout_weight="2"
             android:textAlignment="center"
-            android:textSize="24sp" />
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/my_weather_list_item_temp_textView"
@@ -50,7 +51,7 @@
             android:layout_height="0dp"
             android:layout_weight="3"
             android:textAlignment="center"
-            android:textSize="36sp" />
+            android:textSize="32sp" />
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

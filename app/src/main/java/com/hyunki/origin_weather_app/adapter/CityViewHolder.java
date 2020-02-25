@@ -19,12 +19,7 @@ public class CityViewHolder extends RecyclerView.ViewHolder {
 
     public void bind(City city, CityClickListener listener) {
         textView.setText(city.getName());
-        textView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                listener.refreshFragmentWithCityInfo(city);
-            }
-        });
+        textView.setOnClickListener(view -> listener.updateFragmentWithCityInfo(city));
 
     }
 
