@@ -217,7 +217,7 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
                 .filter(city -> city.getName().toLowerCase().startsWith(s.toLowerCase()))
                 .toList().subscribe(
                 cities -> {
-                    cityRecyclerViewAdapter.setList(new ArrayList<>(cities));
+                    cityRecyclerViewAdapter.setFilteredList(new ArrayList<>(cities));
                 },
 
                 throwable -> {
