@@ -1,6 +1,5 @@
 package com.hyunki.origin_weather_app.adapter;
 
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -38,7 +37,7 @@ class ForecastViewHolder extends RecyclerView.ViewHolder {
         conditionTextView.setText(forecast.getWeather().get(0).getMain());
         conditionDetailTextView.setText(forecast.getWeather().get(0).getDescription());
         int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTempKelvin());
-        tempTextView.setText(String.format(Locale.US,"%d%s", temp, "℉"));
+        tempTextView.setText(String.format(Locale.US, "%d%s", temp, "℉"));
 
         String icon = forecast.getWeather().get(0).getIcon();
         String iconUri = String.format("https://openweathermap.org/img/wn/%s@2x.png", icon);

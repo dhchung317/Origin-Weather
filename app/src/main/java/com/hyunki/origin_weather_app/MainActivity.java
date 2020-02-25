@@ -4,18 +4,17 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager2.widget.ViewPager2;
@@ -28,6 +27,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.hyunki.origin_weather_app.adapter.FavoritesAdapter;
 import com.hyunki.origin_weather_app.adapter.WeatherPagerAdapter;
 import com.hyunki.origin_weather_app.controller.CityClickListener;
+import com.hyunki.origin_weather_app.controller.FavoritesClickListener;
 import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.viewmodel.SharedViewModel;
 
@@ -38,10 +38,9 @@ import java.util.Objects;
 
 import static com.hyunki.origin_weather_app.fragments.WeatherFragment.PERMISSION_ID;
 
-public class MainActivity extends AppCompatActivity implements CityClickListener {
+public class MainActivity extends AppCompatActivity implements CityClickListener, FavoritesClickListener {
 
     private FirebaseAuth auth;
-    private FirebaseAuth.AuthStateListener authListener;
 
     private SharedViewModel viewModel;
 
@@ -91,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
                     }
                 }).attach();
 
+        //Favorites Dummy Array
         ArrayList<City> dummyArray = new ArrayList<>();
 
         City city = new City();
@@ -103,7 +103,12 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         dummyArray.add(city);
         dummyArray.add(city2);
         dummyArray.add(city3);
+        //Favorites Dummy Array
 
+        //TODO- factor out dummylist and create method to check firebase for favorite entries under the signed in user
+        // - if signed in, and if there are entries, retrieve the entry list, and set the adapter with the list
+        // - use context passed in the adapter constructor to write methods in the adapter that will call
+        // an onClick listener that will display the selected city's forecast as a page on the exploreFragment
         FavoritesAdapter adapter = new FavoritesAdapter(this, dummyArray);
         favoriteCitiesListView.setAdapter(adapter);
 
@@ -112,9 +117,9 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
             if (id == R.id.nav_favorites) {
                 toggleFavoritesList();
             }
-            if (item.isChecked()){
+            if (item.isChecked()) {
                 item.setChecked(false);
-            }else{
+            } else {
                 item.setChecked(true);
             }
             return true;
@@ -147,12 +152,12 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-        if(auth.getCurrentUser() != null) {
+        if (auth.getCurrentUser() != null) {
             if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
                 return true;
             }
-        }else{
-            showSnackBar(findViewById(R.id.coordinatorLayout),getString(R.string.sign_in_for_favorites_prompt));
+        } else {
+            showSnackBar(findViewById(R.id.coordinatorLayout), getString(R.string.sign_in_for_favorites_prompt));
         }
 
         switch (item.getTitle().toString()) {
@@ -179,10 +184,10 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         return super.onPrepareOptionsMenu(menu);
     }
 
-    private void toggleFavoritesList(){
-        if(favoriteCitiesListView.getVisibility() == View.GONE){
+    private void toggleFavoritesList() {
+        if (favoriteCitiesListView.getVisibility() == View.GONE) {
             favoriteCitiesListView.setVisibility(View.VISIBLE);
-        }else{
+        } else {
             favoriteCitiesListView.setVisibility(View.GONE);
         }
     }
@@ -201,23 +206,10 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
     private void revokeAccess() {
         auth.signOut();
     }
+
+    @Override
+    public void showForecastForSelectedFavorite(City city) {
+        //TODO- factor out snackbar message and instead go to explore fragment and render forecast with city object data
+        Toast.makeText(this, String.format("%s %s", getString(R.string.dummylist_snackbar_alert), city.getName()), Toast.LENGTH_SHORT).show();
+    }
 }
-
-// TODO- Displays users location and local weather (in Fahrenheit) upon opening app
-// TODO- Present detailed weather conditions (rain, sleet, sunny, etc.) with strong attention to design
-// TODO- Allows users to search for weather in other cities
-// TODO- Allow users to be able to register and login using Firebase api
-// TODO- Styling is key!
-//  Bonus:
-// TODO- Be able to save certain cities you’re interested in (or visit frequently),
-//  and have that data present from a navigation perspective.
-// TODO- Present a few future days of generic (less-defined) weather for a city
-
-//TODO- parse the dates in forecast list to show only unique days
-//TODO- overall color scheme and styling of app
-//TODO- navigation drawer that displays favorites, available to signed in users
-//TODO- functionality to save favorites by user, (use firebase storage)
-
-//TODO MAYBE- rebuild the model and api call to get one day in metric
-
-//TODO EXTRA- show the extended forecast throughout each day by time

@@ -1,13 +1,11 @@
 package com.hyunki.origin_weather_app.fragments;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -155,7 +153,7 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
             conditionDetailTextView.setText(forecast.getWeather().get(0).getDescription());
 
             int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTempKelvin());
-            tempTextView.setText(String.format(Locale.US,"%d%s", temp, getString(R.string.degree_fahrenheit)));
+            tempTextView.setText(String.format(Locale.US, "%d%s", temp, getString(R.string.degree_fahrenheit)));
 
             String icon = forecasts.get(0).getWeather().get(0).getIcon();
             String iconUri = String.format("https://openweathermap.org/img/wn/%s@2x.png", icon);
@@ -191,11 +189,11 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
     }
 
     private void toggleFavoriteButton() {
-        //TODO- change logic to work with a database
-        // two methods? when a city is loaded, check to see if it is in favorites,
-        // if not it will be an empty button, if it is it will display filled one.
-        // then when you click the button, you need to check if it is in the set or not.
-        // if it is, remove from set and refresh view. if not add and refresh view.
+        //TODO- change logic to work with firebase
+        // -when a city is loaded, check to see if it is in favorites,
+        // -if not, the heart button will be an empty button, if it is, it will display filled one.
+        // -then when you click to favorite something, you need to check if it is in the dataset or not.
+        // -if it is, remove from dataset and refresh view. if not add to dataset and refresh view.
 
         if ((int) favoriteButton.getTag() == R.drawable.ic_favorite_border) {
             favoriteButton.setTag(R.drawable.ic_favorite);

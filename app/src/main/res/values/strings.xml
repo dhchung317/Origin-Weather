@@ -18,4 +18,5 @@
     <string name="google_sign_in_authentication_failed">Authentication failed</string>
     <string name="google_sign_in_failed">Google sign in failed</string>
     <string name="sign_in_for_favorites_prompt">Sign in with google to save favorites</string>
+    <string name="dummylist_snackbar_alert">favorite city selected!</string>
 </resources>
