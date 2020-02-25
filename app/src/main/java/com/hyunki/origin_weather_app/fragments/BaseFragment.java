@@ -10,13 +10,15 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.hyunki.origin_weather_app.R;
 
+import java.util.Objects;
+
 abstract class BaseFragment extends Fragment {
-    SwipeRefreshLayout swipeRefreshLayout;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        swipeRefreshLayout = getActivity().findViewById(R.id.swiperefresh);
+        swipeRefreshLayout = Objects.requireNonNull(getActivity()).findViewById(R.id.swiperefresh);
         swipeRefreshLayout.setOnRefreshListener(() -> {
             refresh();
             swipeRefreshLayout.setRefreshing(false);

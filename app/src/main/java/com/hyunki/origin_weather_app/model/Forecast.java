@@ -2,6 +2,7 @@ package com.hyunki.origin_weather_app.model;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Forecast {
@@ -9,7 +10,7 @@ public class Forecast {
     private Temp temp;
 
     @SerializedName("weather")
-    private List<Weather> weather;
+    private ArrayList<Weather> weather;
 
     private String dt_txt;
 
@@ -17,7 +18,7 @@ public class Forecast {
         return temp;
     }
 
-    public List<Weather> getWeather() {
+    public ArrayList<Weather> getWeather() {
         return weather;
     }
 

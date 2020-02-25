@@ -9,43 +9,40 @@ import com.hyunki.origin_weather_app.model.util.JSONUtil;
 import com.hyunki.origin_weather_app.network.RetrofitFactory;
 import com.hyunki.origin_weather_app.network.WeatherService;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import io.reactivex.Observable;
-import io.reactivex.functions.Function;
 
 public class RepositoryImpl implements Repository {
 
-    public static final String API_KEY = "872ec5abb676430b71b8708ce8e2e1ba";
+    private static final String API_KEY = "872ec5abb676430b71b8708ce8e2e1ba";
 
     @Override
-    public Observable<List<Forecast>> getForecasts(String location) {
+    public Observable<ArrayList<Forecast>> getForecasts(String location) {
         return RetrofitFactory.getInstance()
                 .create(WeatherService.class)
-                .getResponse(location,null,API_KEY)
-                .map(weatherResponse -> weatherResponse.getList());
+                .getResponse(location, null, API_KEY)
+                .map(WeatherResponse::getList);
     }
 
     @Override
-    public Observable<List<Forecast>> getForecastsById(String id) {
+    public Observable<ArrayList<Forecast>> getForecastsById(String id) {
         return RetrofitFactory.getInstance()
                 .create(WeatherService.class)
-                .getResponse(null,id,API_KEY)
-                .map(weatherResponse -> weatherResponse.getList());
+                .getResponse(null, id, API_KEY)
+                .map(WeatherResponse::getList);
     }
 
     @Override
     public Observable<City> getCityById(String id) {
         return RetrofitFactory.getInstance()
                 .create(WeatherService.class)
-                .getResponse(null,id,API_KEY)
-                .map(weatherResponse -> weatherResponse.getCity());
+                .getResponse(null, id, API_KEY)
+                .map(WeatherResponse::getCity);
     }
 
     @Override
-    public City[] getCities(Context context, String filename) {
+    public ArrayList<City> getCities(Context context, String filename) {
         return JSONUtil.cityJSONtoJACKSON(context, filename);
     }
-
-
 }

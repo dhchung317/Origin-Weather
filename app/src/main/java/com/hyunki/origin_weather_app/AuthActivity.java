@@ -20,16 +20,17 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+import java.util.Objects;
+
 public class AuthActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int RC_SIGN_IN = 1;
     private static final String TAG = "AuthActivity";
 
     private FirebaseAuth auth;
-    private SignInButton googleButton;
 
     private GoogleSignInClient googleSignInClient;
-    FirebaseAuth.AuthStateListener authListener;
+    private FirebaseAuth.AuthStateListener authListener;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -37,13 +38,12 @@ public class AuthActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_auth);
 
         auth = FirebaseAuth.getInstance();
-        googleButton = findViewById(R.id.google_button);
+        SignInButton googleButton = findViewById(R.id.google_button);
 
         googleButton.setOnClickListener(view -> signIn());
 
         authListener = firebaseAuth -> {
             if (firebaseAuth.getCurrentUser() != null) {
-                //start activity/fragment
                 Log.d(TAG, "onCreate: " + auth.getCurrentUser().getUid());
                 onAuthSuccess();
             }
@@ -101,7 +101,7 @@ public class AuthActivity extends AppCompatActivity implements View.OnClickListe
             try {
                 // Google Sign In was successful, authenticate with Firebase
                 GoogleSignInAccount account = task.getResult(ApiException.class);
-                firebaseAuthWithGoogle(account);
+                firebaseAuthWithGoogle(Objects.requireNonNull(account));
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately
                 Log.w(TAG, "Google sign in failed", e);

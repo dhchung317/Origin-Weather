@@ -9,15 +9,15 @@ import com.hyunki.origin_weather_app.R;
 import com.hyunki.origin_weather_app.controller.CityClickListener;
 import com.hyunki.origin_weather_app.model.City;
 
-public class CityViewHolder extends RecyclerView.ViewHolder {
+class CityViewHolder extends RecyclerView.ViewHolder {
     private TextView textView;
 
-    public CityViewHolder(View itemView) {
+    CityViewHolder(View itemView) {
         super(itemView);
         textView = itemView.findViewById(R.id.explore_list_item_textView);
     }
 
-    public void bind(City city, CityClickListener listener) {
+    void bind(City city, CityClickListener listener) {
         textView.setText(city.getName());
         textView.setOnClickListener(view -> listener.updateFragmentWithCityInfo(city));
 

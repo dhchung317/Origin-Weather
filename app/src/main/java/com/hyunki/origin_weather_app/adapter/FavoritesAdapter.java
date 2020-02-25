@@ -10,6 +10,8 @@ import android.widget.TextView;
 import com.hyunki.origin_weather_app.R;
 import com.hyunki.origin_weather_app.model.City;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 
 public class FavoritesAdapter extends ArrayAdapter<City> {
@@ -18,8 +20,9 @@ public class FavoritesAdapter extends ArrayAdapter<City> {
         super(context, 0, cities);
     }
 
+    @NotNull
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, @NotNull ViewGroup parent) {
         // Get the data item for this position
         City city = getItem(position);
         // Check if an existing view is being reused, otherwise inflate the view
@@ -28,7 +31,7 @@ public class FavoritesAdapter extends ArrayAdapter<City> {
         }
 
         TextView textView = convertView.findViewById(R.id.favorite_list_item_textView);
-        textView.setText(city.getName());
+        textView.setText(city != null ? city.getName() : "");
         return convertView;
     }
 }
