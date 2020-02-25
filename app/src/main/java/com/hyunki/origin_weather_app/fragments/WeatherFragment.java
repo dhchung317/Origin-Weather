@@ -44,12 +44,10 @@ public class WeatherFragment extends BaseFragment {
 
     private SharedViewModel viewModel;
 
-    private ProgressBar progressBar;
     private ImageView weatherIcon;
     private TextView tempTextView;
     private TextView locationTextView;
     private ForecastRecyclerViewAdapter forecastRecyclerViewAdapter;
-    private CoordinatorLayout coordinatorLayout;
 
     private String myLocation;
 
@@ -57,8 +55,6 @@ public class WeatherFragment extends BaseFragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         viewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(SharedViewModel.class);
-        progressBar = getActivity().findViewById(R.id.progress_bar);
-        coordinatorLayout = getActivity().findViewById(R.id.coordinatorLayout);
 
         if (checkPermissions()) {
             if (isLocationEnabled()) {
@@ -94,7 +90,6 @@ public class WeatherFragment extends BaseFragment {
     @Override
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        progressBar = Objects.requireNonNull(getActivity()).findViewById(R.id.progress_bar);
 
         weatherIcon = view.findViewById(R.id.my_weather_locationIcon_imageView);
         tempTextView = view.findViewById(R.id.my_weather_temp_textView);
@@ -165,14 +160,6 @@ public class WeatherFragment extends BaseFragment {
 
     }
 
-    private void showProgressBar(boolean isVisible) {
-        if (isVisible) {
-            progressBar.setVisibility(View.VISIBLE);
-        } else {
-            progressBar.setVisibility(View.GONE);
-        }
-    }
-
     private boolean checkPermissions() {
         if (ActivityCompat.checkSelfPermission(Objects.requireNonNull(getContext()), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -186,21 +173,6 @@ public class WeatherFragment extends BaseFragment {
         return Objects.requireNonNull(locationManager).isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(
                 LocationManager.NETWORK_PROVIDER
         );
-    }
-
-    public void showSnackBar(View v, String message) {
-        Snackbar.make(v, message,
-                Snackbar.LENGTH_SHORT)
-                .show();
-    }
-
-    public void showNetworkErrorSnack() {
-        showSnackBar(coordinatorLayout, getString(R.string.network_error));
-    }
-
-    public void showLocationErrorSnack() {
-        showSnackBar(Objects.requireNonNull(getActivity(),getString(R.string.require_non_null_activity))
-                .findViewById(R.id.coordinatorLayout), getString(R.string.location_error));
     }
 
     private void requestPermissions() {

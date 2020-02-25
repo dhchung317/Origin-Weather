@@ -13,8 +13,10 @@ import com.hyunki.origin_weather_app.model.util.DateUtil;
 import com.hyunki.origin_weather_app.model.util.TempUtil;
 import com.squareup.picasso.Picasso;
 
+import java.util.Locale;
+
 class ForecastViewHolder extends RecyclerView.ViewHolder {
-    private static final String TAG = "forecast-viewholder";
+
     private TextView dateTextView;
     private TextView tempTextView;
     private ImageView iconImageView;
@@ -33,15 +35,10 @@ class ForecastViewHolder extends RecyclerView.ViewHolder {
     void bind(Forecast forecast) {
 
         dateTextView.setText(DateUtil.getFormattedDate(forecast.getDate()));
-        Log.d(TAG, "bind: " + forecast.getDate());
-
         conditionTextView.setText(forecast.getWeather().get(0).getMain());
-
-        Log.d(TAG, "bind: " + forecast.getWeather().get(0).getMain());
         conditionDetailTextView.setText(forecast.getWeather().get(0).getDescription());
-
         int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTempKelvin());
-        tempTextView.setText(temp + "℉");
+        tempTextView.setText(String.format(Locale.US,"%d%d", temp, R.string.degree_fahrenheit));
 
         String icon = forecast.getWeather().get(0).getIcon();
         String iconUri = String.format("https://openweathermap.org/img/wn/%s@2x.png", icon);

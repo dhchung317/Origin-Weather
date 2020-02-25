@@ -23,13 +23,10 @@ public class FavoritesAdapter extends ArrayAdapter<City> {
     @NotNull
     @Override
     public View getView(int position, View convertView, @NotNull ViewGroup parent) {
-        // Get the data item for this position
         City city = getItem(position);
-        // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_favorite, parent, false);
         }
-
         TextView textView = convertView.findViewById(R.id.favorite_list_item_textView);
         textView.setText(city != null ? city.getName() : "");
         return convertView;

@@ -37,7 +37,6 @@ import java.util.Objects;
 import static com.hyunki.origin_weather_app.fragments.WeatherFragment.PERMISSION_ID;
 
 public class MainActivity extends AppCompatActivity implements CityClickListener {
-    public static final String TAG = "main--";
 
     private FirebaseAuth auth;
 
@@ -104,19 +103,14 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         dummyArray.add(city2);
         dummyArray.add(city3);
 
-// Create the adapter to convert the array to views
         FavoritesAdapter adapter = new FavoritesAdapter(this, dummyArray);
-// Attach the adapter to a ListView
-        ListView listView = findViewById(R.id.favorite_cities_list_view);
-        listView.setAdapter(adapter);
+        favoriteCitiesListView.setAdapter(adapter);
 
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
-
             if (id == R.id.nav_favorites) {
                 toggleFavoritesList();
             }
-
             if (item.isChecked()){
                 item.setChecked(false);
             }else{
@@ -131,7 +125,6 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_ID) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "onRequestPermissionsResult: granted");
                 viewModel.requestNewLocationData();
             }
         }
@@ -155,7 +148,6 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         switch (item.getTitle().toString()) {
 
             case "Sign In": {
-                Log.d(TAG, "onOptionsItemSelected: item selected");
                 showLoginActivity();
             }
 
@@ -176,9 +168,9 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         MenuItem item = menu.findItem(R.id.login_switch);
 
         if (auth.getCurrentUser() != null) {
-            item.setTitle("Sign Out");
+            item.setTitle(getString(R.string.menu_item_sign_out));
         } else {
-            item.setTitle("Sign In");
+            item.setTitle(getString(R.string.menu_item_sign_in));
         }
         return super.onPrepareOptionsMenu(menu);
     }
@@ -194,16 +186,11 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
     private void showLoginActivity() {
         Intent intent = new Intent(this, AuthActivity.class);
         startActivity(intent);
-
     }
 
     private void revokeAccess() {
-        // Firebase sign out
         auth.signOut();
-
-        //update ui
     }
-
 }
 
 //        TODO- Displays users location and local weather (in Fahrenheit) upon opening app

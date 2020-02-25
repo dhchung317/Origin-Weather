@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ProgressBar;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,6 +16,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -22,12 +24,14 @@ import com.google.firebase.auth.GoogleAuthProvider;
 
 import java.util.Objects;
 
-public class AuthActivity extends AppCompatActivity implements View.OnClickListener {
+public class AuthActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 1;
     private static final String TAG = "AuthActivity";
 
     private FirebaseAuth auth;
+
+    private ProgressBar progressBar;
 
     private GoogleSignInClient googleSignInClient;
     private FirebaseAuth.AuthStateListener authListener;
@@ -37,6 +41,8 @@ public class AuthActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_auth);
 
+        progressBar = findViewById(R.id.progress_bar);
+
         auth = FirebaseAuth.getInstance();
         SignInButton googleButton = findViewById(R.id.google_button);
 
@@ -44,7 +50,6 @@ public class AuthActivity extends AppCompatActivity implements View.OnClickListe
 
         authListener = firebaseAuth -> {
             if (firebaseAuth.getCurrentUser() != null) {
-                Log.d(TAG, "onCreate: " + auth.getCurrentUser().getUid());
                 onAuthSuccess();
             }
         };
@@ -57,37 +62,20 @@ public class AuthActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
-        Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
-        // [START_EXCLUDE silent]
-//        showProgressBar();
-        // [END_EXCLUDE]
-
+        showProgressBar(true);
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         auth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        // Sign in success, update UI with the signed-in user's information
-                        Log.d(TAG, "signInWithCredential:success");
-                        FirebaseUser user = auth.getCurrentUser();
-//                        updateUI(user);
-                    } else {
-                        // If sign in fails, display a message to the user.
-                        Log.w(TAG, "signInWithCredential:failure", task.getException());
-//                            Snackbar.make(findViewById(R.id.main_layout), "Authentication Failed.", Snackbar.LENGTH_SHORT).show();
-//                        updateUI(null);
+                    if (!task.isSuccessful()) {
+                        showSnackBar(findViewById(R.id.auth_layout),getString(R.string.google_sign_in_authentication_failed));
                     }
-
-                    // [START_EXCLUDE]
-//                        hideProgressBar();
-                    // [END_EXCLUDE]
+                    showProgressBar(false);
                 });
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-//        FirebaseUser currentUser = auth.getCurrentUser();
-//        updateUI(currentUser);
         auth.addAuthStateListener(authListener);
     }
 
@@ -95,17 +83,15 @@ public class AuthActivity extends AppCompatActivity implements View.OnClickListe
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
-                // Google Sign In was successful, authenticate with Firebase
                 GoogleSignInAccount account = task.getResult(ApiException.class);
                 firebaseAuthWithGoogle(Objects.requireNonNull(account));
             } catch (ApiException e) {
-                // Google Sign In failed, update UI appropriately
-                Log.w(TAG, "Google sign in failed", e);
-                // ...
+                Log.w(TAG, getString(R.string.google_sign_in_failed), e);
+                showSnackBar(findViewById(R.id.auth_layout),getString(R.string.google_sign_in_failed));
+
             }
         }
     }
@@ -115,56 +101,21 @@ public class AuthActivity extends AppCompatActivity implements View.OnClickListe
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
-    private void signOut() {
-        // Firebase sign out
-        auth.signOut();
-
-        // Google sign out
-//        googleSignInClient.signOut().addOnCompleteListener(this,
-//                task -> updateUI(null));
-    }
-
-    private void revokeAccess() {
-        // Firebase sign out
-        auth.signOut();
-
-        // Google revoke access
-//        googleSignInClient.revokeAccess().addOnCompleteListener(this,
-//                task -> updateUI(null));
-    }
-
-//    private void updateUI(FirebaseUser user) {
-////        hideProgressBar();
-//        if (user != null) {
-////            mStatusTextView.setText(getString(R.string.google_status_fmt, user.getEmail()));
-////            mDetailTextView.setText(getString(R.string.firebase_status_fmt, user.getUid()));
-//
-////            findViewById(R.id.signInButton).setVisibility(View.GONE);
-////            findViewById(R.id.signOutAndDisconnect).setVisibility(View.VISIBLE);
-//        } else {
-////            mStatusTextView.setText(R.string.signed_out);
-////            mDetailTextView.setText(null);
-////
-////            findViewById(R.id.signInButton).setVisibility(View.VISIBLE);
-////            findViewById(R.id.signOutAndDisconnect).setVisibility(View.GONE);
-//        }
-//    }
     private void onAuthSuccess(){
-//        Intent intent = new Intent(this, MainActivity.class);
-//        startActivity(intent);
         finish();
     }
 
-    @Override
-    public void onClick(View v) {
-        int i = v.getId();
-//        if (i == R.id.signInButton) {
-//            signIn();
-//        } else if (i == R.id.signOutButton) {
-//            signOut();
-//        } else if (i == R.id.disconnectButton) {
-//            revokeAccess();
-//        }
+    void showProgressBar(boolean isVisible) {
+        if (isVisible) {
+            progressBar.setVisibility(View.VISIBLE);
+        } else {
+            progressBar.setVisibility(View.GONE);
+        }
+    }
+    public void showSnackBar(View v, String message) {
+        Snackbar.make(v, message,
+                Snackbar.LENGTH_SHORT)
+                .show();
     }
 
     @Override
@@ -172,7 +123,6 @@ public class AuthActivity extends AppCompatActivity implements View.OnClickListe
         super.onBackPressed();
         finish();
     }
-
 }
 
 

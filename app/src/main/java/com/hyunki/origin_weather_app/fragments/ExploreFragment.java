@@ -43,8 +43,6 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
 
     private SharedViewModel viewModel;
 
-    private ProgressBar progressBar;
-
     private CityRecyclerViewAdapter cityRecyclerViewAdapter;
 
     private ImageButton favoriteButton;
@@ -63,10 +61,7 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
 
         viewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(SharedViewModel.class);
 
-        progressBar = getActivity().findViewById(R.id.progress_bar);
-
         viewModel.loadCities(getActivity().getApplicationContext(), "citylist.json");
-
         viewModel.getCityLiveData().observe(getViewLifecycleOwner(), this::renderCities);
         viewModel.getSingleCityLiveData().observe(getViewLifecycleOwner(), this::renderSingleCity);
         viewModel.getExploredForecastLiveData().observe(getViewLifecycleOwner(), this::renderForecast);
@@ -79,7 +74,6 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
                 hideButton();
             }
         };
-
         auth.addAuthStateListener(authListener);
     }
 
@@ -105,7 +99,6 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
         exploreRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         exploreRecyclerView.setAdapter(cityRecyclerViewAdapter);
         favoriteButton = view.findViewById(R.id.favorite_button);
-
     }
 
     private void initButton() {
@@ -131,6 +124,7 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
         } else if (state == State.Error.INSTANCE) {
             showProgressBar(false);
             Log.d(TAG, "render: state error");
+            showNetworkErrorSnack();
 
         } else if (state.getClass() == State.Success.OnCitiesLoaded.class) {
             showProgressBar(false);
@@ -156,6 +150,7 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
         } else if (state == State.Error.INSTANCE) {
             showProgressBar(false);
             Log.d(TAG, "render: state error");
+            showNetworkErrorSnack();
 
         } else if (state.getClass() == State.Success.OnForecastsByIdLoaded.class) {
             showProgressBar(false);
@@ -193,6 +188,7 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
         } else if (state == State.Error.INSTANCE) {
             showProgressBar(false);
             Log.d(TAG, "render: state error");
+            showNetworkErrorSnack();
 
         } else if (state.getClass() == State.Success.OnCityByIdLoaded.class) {
             showProgressBar(false);
@@ -208,15 +204,6 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
             if (searchView.hasFocus()) {
                 searchView.clearFocus();
             }
-        }
-    }
-
-    private void showProgressBar(boolean isVisible) {
-
-        if (isVisible) {
-            progressBar.setVisibility(View.VISIBLE);
-        } else {
-            progressBar.setVisibility(View.GONE);
         }
     }
 
