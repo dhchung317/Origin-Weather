@@ -47,6 +47,8 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
     private ImageView weatherIcon;
     private TextView tempTextView;
     private TextView locationTextView;
+    private TextView conditionTextView;
+    private TextView conditionDetailTextView;
     private SearchView searchView;
 
     private String default_city_name = "";
@@ -91,6 +93,8 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
         weatherIcon = view.findViewById(R.id.explore_locationIcon_imageView);
         tempTextView = view.findViewById(R.id.explore_temp_textView);
         locationTextView = view.findViewById(R.id.explore_location_textView);
+        conditionTextView = view.findViewById(R.id.explore_condition_textView);
+        conditionDetailTextView = view.findViewById(R.id.explore_condition_detail_textView);
 
         cityRecyclerViewAdapter = new CityRecyclerViewAdapter(new ArrayList<>());
         RecyclerView exploreRecyclerView = view.findViewById(R.id.explore_recycler_view);
@@ -146,6 +150,9 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
 
             List<Forecast> forecasts = s.getForecasts();
             Forecast forecast = forecasts.get(0);
+
+            conditionTextView.setText(forecast.getWeather().get(0).getMain());
+            conditionDetailTextView.setText(forecast.getWeather().get(0).getDescription());
 
             int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTempKelvin());
             tempTextView.setText(String.format(Locale.US,"%d%s", temp, getString(R.string.degree_fahrenheit)));

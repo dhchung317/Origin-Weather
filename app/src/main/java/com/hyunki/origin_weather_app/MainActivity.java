@@ -211,9 +211,3 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
 //TODO MAYBE- rebuild the model and api call to get one day in metric
 
 //TODO EXTRA- show the extended forecast throughout each day by time
-
-
-//Certificate fingerprints:
-//	 MD5:  88:56:84:2E:DF:4D:43:67:4F:52:3E:0D:64:70:96:E6
-//	 SHA1: 82:47:06:C6:3B:B4:EF:01:A2:90:82:82:CB:1A:21:9A:BC:09:07:4B
-//	 SHA256: A8:AA:F9:21:09:B5:43:80:EA:01:3E:B1:FE:0B:E4:76:EC:77:15:AD:92:97:71:E4:FC:BF:0B:ED:71:95:74:DE

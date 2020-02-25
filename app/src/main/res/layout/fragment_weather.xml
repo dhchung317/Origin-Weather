@@ -3,14 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/colorPrimaryDark">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="2"
+        app:cardBackgroundColor="@color/colorDarkBackground"
         app:layout_constraintBottom_toTopOf="@+id/my_weather_recycler_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
@@ -22,24 +26,58 @@
                 android:id="@+id/my_weather_location_textView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
+                android:layout_weight="1.5"
+                android:textAlignment="center"
+                android:textColor="@color/colorTextOnDark"
+                android:textStyle="bold"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/my_weather_date_textView"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
                 android:layout_weight="2"
                 android:textAlignment="center"
-                android:textSize="24sp" />
+                android:textColor="@color/colorTextOnDark"
+                android:textStyle="bold"
+                android:textSize="32sp" />
 
             <ImageView
-                android:id="@+id/my_weather_locationIcon_imageView"
+                android:id="@+id/my_weather_icon_imageView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_gravity="center"
-                android:layout_weight="8" />
+                android:layout_weight="6" />
+
+            <TextView
+                android:id="@+id/my_weather_condition_textView"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:textAlignment="center"
+                android:textColor="@color/colorTextOnDark"
+                android:textSize="24sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/my_weather_condition_detail_textView"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1.5"
+                android:textAlignment="center"
+                android:textColor="@color/colorTextOnDark"
+                android:textSize="18sp" />
 
             <TextView
                 android:id="@+id/my_weather_temp_textView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
+                android:layout_marginBottom="8dp"
                 android:layout_weight="3"
                 android:textAlignment="center"
-                android:textSize="36sp" />
+                android:textColor="@color/colorTextOnDark"
+                android:textSize="36sp"
+                android:textStyle="bold"/>
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -50,6 +88,8 @@
         android:layout_height="0dp"
         android:layout_weight="3"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/cardView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

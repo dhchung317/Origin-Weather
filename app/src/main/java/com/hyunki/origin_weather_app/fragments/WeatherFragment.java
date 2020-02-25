@@ -7,25 +7,22 @@ import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.hyunki.origin_weather_app.R;
 import com.hyunki.origin_weather_app.adapter.ForecastRecyclerViewAdapter;
 import com.hyunki.origin_weather_app.model.Forecast;
+import com.hyunki.origin_weather_app.model.util.DateUtil;
 import com.hyunki.origin_weather_app.model.util.TempUtil;
 import com.hyunki.origin_weather_app.viewmodel.SharedViewModel;
 import com.hyunki.origin_weather_app.viewmodel.State;
@@ -34,7 +31,6 @@ import com.squareup.picasso.Picasso;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -44,8 +40,11 @@ public class WeatherFragment extends BaseFragment {
     private SharedViewModel viewModel;
 
     private ImageView weatherIcon;
+    private TextView dateTextView;
     private TextView tempTextView;
     private TextView locationTextView;
+    private TextView conditionTextView;
+    private TextView conditionDetailTextView;
     private ForecastRecyclerViewAdapter forecastRecyclerViewAdapter;
 
     private String myLocation;
@@ -86,9 +85,12 @@ public class WeatherFragment extends BaseFragment {
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        weatherIcon = view.findViewById(R.id.my_weather_locationIcon_imageView);
+        weatherIcon = view.findViewById(R.id.my_weather_icon_imageView);
+        dateTextView = view.findViewById(R.id.my_weather_date_textView);
         tempTextView = view.findViewById(R.id.my_weather_temp_textView);
         locationTextView = view.findViewById(R.id.my_weather_location_textView);
+        conditionTextView = view.findViewById(R.id.my_weather_condition_textView);
+        conditionDetailTextView = view.findViewById(R.id.my_weather_condition_detail_textView);
 
         forecastRecyclerViewAdapter = new ForecastRecyclerViewAdapter(new ArrayList<>());
         RecyclerView weatherRecyclerView = view.findViewById(R.id.my_weather_recycler_view);
@@ -109,12 +111,13 @@ public class WeatherFragment extends BaseFragment {
             showProgressBar(false);
             State.Success.OnForecastsLoaded s = (State.Success.OnForecastsLoaded) state;
 
-            List<Forecast> forecasts = s.getForecasts();
-            Forecast forecast = forecasts.remove(0);
-            forecastRecyclerViewAdapter.setList(s.getForecasts());
+            ArrayList<Forecast> forecasts = s.getForecasts();
+            Forecast todaysForecast = forecasts.remove(0);
+            forecastRecyclerViewAdapter.setList(forecasts);
 
+            dateTextView.setText(DateUtil.getFormattedDate(todaysForecast.getDate()));
 
-            int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTempKelvin());
+            int temp = TempUtil.getFahrenheitFromKelvin(todaysForecast.getTemp().getTempKelvin());
             tempTextView.setText(String.format(
                     Locale.US, "%d%s", temp,
                     Objects.requireNonNull(getContext()).getString(R.string.degree_fahrenheit)));
@@ -122,8 +125,10 @@ public class WeatherFragment extends BaseFragment {
             locationTextView.setText(String.format("%s %s",
                     Objects.requireNonNull(getActivity())
                             .getString(R.string.today_in), myLocation));
+            conditionTextView.setText(todaysForecast.getWeather().get(0).getMain());
+            conditionDetailTextView.setText(todaysForecast.getWeather().get(0).getDescription());
 
-            String icon = forecasts.get(0).getWeather().get(0).getIcon();
+            String icon = todaysForecast.getWeather().get(0).getIcon();
             String iconUri = String.format("https://openweathermap.org/img/wn/%s@2x.png", icon);
             Picasso.get().load(iconUri).into(weatherIcon);
         }

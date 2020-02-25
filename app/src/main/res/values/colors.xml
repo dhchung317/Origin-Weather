@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#008577</color>
-    <color name="colorPrimaryDark">#00574B</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorPrimary">#0288D1</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FFF176</color>
+    <color name="colorTextOnDark">#FFF3C7</color>
+    <color name="colorTextOnLight">#242835</color>
+    <color name="colorTabUnselectedText">#9FA8DA</color>
+    <color name="colorTabSelectedText">#FFF59D</color>
+    <color name="colorForecastCardView">#FFF59D</color>
+    <color name="colorDarkBackground">#949AAD</color>
+    <color name="colorLightBackground">#0E2C3C</color>
+    <color name="colorExtraLightBackground">#CFE4F1</color>
 </resources>
