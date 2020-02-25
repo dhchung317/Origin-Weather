@@ -60,9 +60,6 @@ public class SharedViewModel extends AndroidViewModel {
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(forecasts -> {
-                            for(Forecast f : forecasts){
-                                Log.d(TAG, "loadForecasts: " + f.getDate());
-                            }
                                     forecasts = excludeMultipleForecastsOfDate(forecasts);
                                     forecastLiveData.setValue(new State.Success.OnForecastsLoaded(forecasts));
                                 },
@@ -124,10 +121,11 @@ public class SharedViewModel extends AndroidViewModel {
                 task -> {
                     Location location = task.getResult();
                     if (location != null) {
-                        Log.d(TAG, "getLastLocation: location succesful " + getLocationString(location));
                         defaultLocation.setValue(
                                 new State.Success.OnDefaultLocationLoaded(
                                         getLocationString(location)));
+                    } else {
+                        defaultLocation.setValue(State.Error.INSTANCE);
                     }
                 });
     }
@@ -152,9 +150,7 @@ public class SharedViewModel extends AndroidViewModel {
     private LocationCallback locationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
-            Log.d(TAG, "onLocationResult: ran");
             String location = getLocationString(locationResult.getLocations().get(0));
-            Log.d(TAG, "onLocationResult: " + location);
             defaultLocation.setValue(
                     new State.Success.OnDefaultLocationLoaded(location));
         }
@@ -173,7 +169,9 @@ public class SharedViewModel extends AndroidViewModel {
         return defaultLocation;
     }
 
-    public LiveData<State> getExploredForecastLiveData() { return exploredForecastLiveData; }
+    public LiveData<State> getExploredForecastLiveData() {
+        return exploredForecastLiveData;
+    }
 
     public LiveData<State> getSingleCityLiveData() {
         return singleCityLiveData;
@@ -194,14 +192,14 @@ public class SharedViewModel extends AndroidViewModel {
         return locationString;
     }
 
-    private ArrayList<Forecast> excludeMultipleForecastsOfDate(ArrayList<Forecast> forecasts){
+    private ArrayList<Forecast> excludeMultipleForecastsOfDate(ArrayList<Forecast> forecasts) {
         Set<String> dates = new HashSet<>();
         ArrayList<Forecast> returningForecasts = new ArrayList<>();
         for (int i = 0; i < forecasts.size(); i++) {
             Forecast forecast = forecasts.get(i);
-            if(!dates.contains(forecast.getDate().substring(0,10))){
+            if (!dates.contains(forecast.getDate().substring(0, 10))) {
                 returningForecasts.add(forecast);
-                dates.add(forecast.getDate().substring(0,10));
+                dates.add(forecast.getDate().substring(0, 10));
             }
         }
         return returningForecasts;

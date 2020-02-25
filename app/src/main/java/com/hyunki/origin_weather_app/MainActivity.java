@@ -15,11 +15,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.auth.FirebaseAuth;
@@ -39,6 +41,7 @@ import static com.hyunki.origin_weather_app.fragments.WeatherFragment.PERMISSION
 public class MainActivity extends AppCompatActivity implements CityClickListener {
 
     private FirebaseAuth auth;
+    private FirebaseAuth.AuthStateListener authListener;
 
     private SharedViewModel viewModel;
 
@@ -52,25 +55,24 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        auth = FirebaseAuth.getInstance();
+
         favoriteCitiesListView = findViewById(R.id.favorite_cities_list_view);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         invalidateOptionsMenu();
 
-        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView;
 
-        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.open, R.string.close);
-
-        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawer, R.string.open, R.string.close);
+        actionBarDrawerToggle.setDrawerIndicatorEnabled(true);
+        drawer.addDrawerListener(actionBarDrawerToggle);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
         actionBarDrawerToggle.syncState();
 
-        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-
         navigationView = findViewById(R.id.nav_view);
-
-        auth = FirebaseAuth.getInstance();
 
         viewModel = ViewModelProviders.of(this).get(SharedViewModel.class);
 
@@ -89,7 +91,6 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
                     }
                 }).attach();
 
-        // Construct the data source
         ArrayList<City> dummyArray = new ArrayList<>();
 
         City city = new City();
@@ -145,19 +146,22 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getTitle().toString()) {
 
+        if(auth.getCurrentUser() != null) {
+            if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
+                return true;
+            }
+        }else{
+            showSnackBar(findViewById(R.id.coordinatorLayout),getString(R.string.sign_in_for_favorites_prompt));
+        }
+
+        switch (item.getTitle().toString()) {
             case "Sign In": {
                 showLoginActivity();
             }
-
             case "Sign Out": {
                 revokeAccess();
             }
-            return true;
-        }
-
-        if(actionBarDrawerToggle.onOptionsItemSelected(item)){
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -181,6 +185,12 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         }else{
             favoriteCitiesListView.setVisibility(View.GONE);
         }
+    }
+
+    public void showSnackBar(View v, String message) {
+        Snackbar.make(v, message,
+                Snackbar.LENGTH_SHORT)
+                .show();
     }
 
     private void showLoginActivity() {
@@ -211,9 +221,3 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
 //TODO MAYBE- rebuild the model and api call to get one day in metric
 
 //TODO EXTRA- show the extended forecast throughout each day by time
-
-
-//Certificate fingerprints:
-//	 MD5:  88:56:84:2E:DF:4D:43:67:4F:52:3E:0D:64:70:96:E6
-//	 SHA1: 82:47:06:C6:3B:B4:EF:01:A2:90:82:82:CB:1A:21:9A:BC:09:07:4B
-//	 SHA256: A8:AA:F9:21:09:B5:43:80:EA:01:3E:B1:FE:0B:E4:76:EC:77:15:AD:92:97:71:E4:FC:BF:0B:ED:71:95:74:DE

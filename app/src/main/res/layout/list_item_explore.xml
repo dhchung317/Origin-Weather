@@ -3,7 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="@color/colorDarkBackground">
     <TextView
         android:id="@+id/explore_list_item_textView"
         android:textSize="18sp"
@@ -12,7 +13,9 @@
         android:paddingRight="8dp"
         android:paddingLeft="8dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textColor="@color/colorTextOnDark"/>
     <View
         android:id="@+id/separator"
         android:layout_width="match_parent"
