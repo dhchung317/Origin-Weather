@@ -12,7 +12,7 @@ public class Temp {
     @SerializedName("temp_max")
     private double temp_max;
 
-    public double getTemp() {
+    public double getTempKelvin() {
         return temp;
     }
 

@@ -3,9 +3,7 @@ package com.hyunki.origin_weather_app;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
-import android.os.Looper;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,7 +29,10 @@ import com.hyunki.origin_weather_app.controller.CityClickListener;
 import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.viewmodel.SharedViewModel;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
+import java.util.Objects;
 
 import static com.hyunki.origin_weather_app.fragments.WeatherFragment.PERMISSION_ID;
 
@@ -42,13 +43,7 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
 
     private SharedViewModel viewModel;
 
-    private DrawerLayout drawerLayout;
-    private ActionBarDrawerToggle t;
-    private NavigationView navigationView;
-
-    private TabLayout tabLayout;
-    private ViewPager2 viewPager;
-    private WeatherPagerAdapter viewPagerAdapter;
+    private ActionBarDrawerToggle actionBarDrawerToggle;
 
     private ListView favoriteCitiesListView;
 
@@ -64,15 +59,15 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         setSupportActionBar(toolbar);
         invalidateOptionsMenu();
 
-        drawerLayout = findViewById(R.id.drawer_layout);
-        navigationView = findViewById(R.id.nav_view);
+        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+        NavigationView navigationView;
 
-        t = new ActionBarDrawerToggle(this, drawerLayout, R.string.open, R.string.close);
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.open, R.string.close);
 
-        drawerLayout.addDrawerListener(t);
-        t.syncState();
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+        actionBarDrawerToggle.syncState();
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
 
         navigationView = findViewById(R.id.nav_view);
 
@@ -80,12 +75,12 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
 
         viewModel = ViewModelProviders.of(this).get(SharedViewModel.class);
 
-        viewPager = findViewById(R.id.viewpager);
+        ViewPager2 viewPager = findViewById(R.id.viewpager);
         viewPager.setUserInputEnabled(false);
-        viewPagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager(), this.getLifecycle());
+        WeatherPagerAdapter viewPagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager(), this.getLifecycle());
         viewPager.setAdapter(viewPagerAdapter);
 
-        tabLayout = findViewById(R.id.tabs);
+        TabLayout tabLayout = findViewById(R.id.tabs);
         new TabLayoutMediator(tabLayout, viewPager,
                 (tab, position) -> {
                     if (position == 0) {
@@ -132,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NotNull String[] permissions, @NotNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_ID) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -170,7 +165,7 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
             return true;
         }
 
-        if(t.onOptionsItemSelected(item)){
+        if(actionBarDrawerToggle.onOptionsItemSelected(item)){
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -188,13 +183,11 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         return super.onPrepareOptionsMenu(menu);
     }
 
-    private boolean toggleFavoritesList(){
+    private void toggleFavoritesList(){
         if(favoriteCitiesListView.getVisibility() == View.GONE){
             favoriteCitiesListView.setVisibility(View.VISIBLE);
-            return true;
         }else{
             favoriteCitiesListView.setVisibility(View.GONE);
-            return false;
         }
     }
 

@@ -12,7 +12,6 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -123,12 +122,10 @@ public class SharedViewModel extends AndroidViewModel {
                     Location location = task.getResult();
 //                    Log.d(TAG, "loadLastLocation: " + location.getLatitude());
                     if (location != null) {
-                        Log.d(TAG, "getLastLocation: location succesful");
+                        Log.d(TAG, "getLastLocation: location succesful " + getLocationString(location));
                         defaultLocation.setValue(
                                 new State.Success.OnDefaultLocationLoaded(
                                         getLocationString(location)));
-                    }else{
-                        defaultLocation.setValue(State.Error.INSTANCE);
                     }
                 });
     }
@@ -154,7 +151,9 @@ public class SharedViewModel extends AndroidViewModel {
     private LocationCallback locationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(LocationResult locationResult) {
+            Log.d(TAG, "onLocationResult: ran");
             String location = getLocationString(locationResult.getLocations().get(0));
+            Log.d(TAG, "onLocationResult: " + location);
             defaultLocation.setValue(
                     new State.Success.OnDefaultLocationLoaded(location));
         }

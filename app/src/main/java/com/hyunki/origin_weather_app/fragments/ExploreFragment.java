@@ -132,7 +132,7 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
             showProgressBar(false);
             Log.d(TAG, "render: state error");
 
-        } else if (state.getClass() == State.Success.class) {
+        } else if (state.getClass() == State.Success.OnCitiesLoaded.class) {
             showProgressBar(false);
             Log.d(TAG, "render: state was success");
             State.Success.OnCitiesLoaded s = (State.Success.OnCitiesLoaded) state;
@@ -157,18 +157,18 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
             showProgressBar(false);
             Log.d(TAG, "render: state error");
 
-        } else if (state.getClass() == State.Success.class) {
+        } else if (state.getClass() == State.Success.OnForecastsByIdLoaded.class) {
             showProgressBar(false);
             Log.d(TAG, "render: state was success");
-            State.Success.OnForecastsLoaded s = (State.Success.OnForecastsLoaded) state;
+            State.Success.OnForecastsByIdLoaded s = (State.Success.OnForecastsByIdLoaded) state;
 
             List<Forecast> forecasts = s.getForecasts();
             Forecast forecast = forecasts.get(0);
 
-            Log.d(TAG, "renderForecast: " + forecast.getTemp().getTemp());
-            Log.d(TAG, "renderForecast: " + TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTemp()));
+            Log.d(TAG, "renderForecast: " + forecast.getTemp().getTempKelvin());
+            Log.d(TAG, "renderForecast: " + TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTempKelvin()));
 
-            int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTemp());
+            int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTempKelvin());
             tempTextView.setText(temp + R.string.degree_fahrenheit);
 
             Log.d(TAG, "renderForecast: " + forecast.getDate());

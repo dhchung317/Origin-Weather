@@ -34,11 +34,14 @@ class ForecastViewHolder extends RecyclerView.ViewHolder {
 
         dateTextView.setText(DateUtil.getFormattedDate(forecast.getDate()));
         Log.d(TAG, "bind: " + forecast.getDate());
+
         conditionTextView.setText(forecast.getWeather().get(0).getMain());
+
+        Log.d(TAG, "bind: " + forecast.getWeather().get(0).getMain());
         conditionDetailTextView.setText(forecast.getWeather().get(0).getDescription());
 
-        int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTemp());
-        tempTextView.setText(temp + R.string.degree_fahrenheit);
+        int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTempKelvin());
+        tempTextView.setText(temp + "℉");
 
         String icon = forecast.getWeather().get(0).getIcon();
         String iconUri = String.format("https://openweathermap.org/img/wn/%s@2x.png", icon);

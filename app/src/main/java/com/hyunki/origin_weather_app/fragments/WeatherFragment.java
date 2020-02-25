@@ -35,6 +35,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 public class WeatherFragment extends BaseFragment {
@@ -59,11 +60,6 @@ public class WeatherFragment extends BaseFragment {
         progressBar = getActivity().findViewById(R.id.progress_bar);
         coordinatorLayout = getActivity().findViewById(R.id.coordinatorLayout);
 
-        viewModel.getDefaultLocation().observe(getViewLifecycleOwner(), s -> {
-            onLocationLoaded(s);
-            Log.d(TAG, "onCreate: location ");
-        });
-
         if (checkPermissions()) {
             if (isLocationEnabled()) {
                 viewModel.loadLastLocation();
@@ -75,6 +71,11 @@ public class WeatherFragment extends BaseFragment {
         } else {
             requestPermissions();
         }
+
+        viewModel.getDefaultLocation().observe(getViewLifecycleOwner(), s -> {
+            onLocationLoaded(s);
+            Log.d(TAG, "onCreate: location ");
+        });
 
         viewModel.getForecastLiveData().observe(getViewLifecycleOwner(), this::renderForecast);
     }
@@ -109,27 +110,29 @@ public class WeatherFragment extends BaseFragment {
 
         if (state == State.Loading.INSTANCE) {
             showProgressBar(true);
-            Log.d(TAG, "render: state was loading");
+            Log.d(TAG, "renderFOrecast: state was loading");
 
         } else if (state == State.Error.INSTANCE) {
             showProgressBar(false);
-            Log.d(TAG, "render: state error");
+            Log.d(TAG, "renderforcast: state error");
             showNetworkErrorSnack();
 
-        } else if (state.getClass() == State.Success.class) {
+        } else if (state.getClass() == State.Success.OnForecastsLoaded.class) {
             showProgressBar(false);
-            Log.d(TAG, "render: state was success");
+            Log.d(TAG, "renderfprecast: state was success");
             State.Success.OnForecastsLoaded s = (State.Success.OnForecastsLoaded) state;
 
             forecastRecyclerViewAdapter.setList(s.getForecasts());
             List<Forecast> forecasts = s.getForecasts();
             Forecast forecast = forecasts.get(0);
 
-            Log.d(TAG, "renderForecast: " + forecast.getTemp().getTemp());
-            Log.d(TAG, "renderForecast: " + TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTemp()));
+            Log.d(TAG, "renderForecast: " + forecast.getTemp().getTempKelvin());
+            Log.d(TAG, "renderForecast: " + TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTempKelvin()));
 
-            int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTemp());
-            tempTextView.setText(temp + R.string.degree_fahrenheit);
+            int temp = TempUtil.getFahrenheitFromKelvin(forecast.getTemp().getTempKelvin());
+            tempTextView.setText(String.format(
+                    Locale.US,"%d%s", temp,
+                    Objects.requireNonNull(getContext()).getString(R.string.degree_fahrenheit)));
 
             locationTextView.setText(String.format("%s %s",
                     Objects.requireNonNull(getActivity())
@@ -144,19 +147,19 @@ public class WeatherFragment extends BaseFragment {
     private void onLocationLoaded(State state){
         if (state == State.Loading.INSTANCE) {
             showProgressBar(true);
-            Log.d(TAG, "render: state was loading");
+            Log.d(TAG, "renderlocaiton: state was loading");
 
         } else if (state == State.Error.INSTANCE) {
             showProgressBar(false);
-            Log.d(TAG, "render: state error");
+            Log.d(TAG, "rendelocationr: state error");
             showNetworkErrorSnack();
 
         } else if (state.getClass() == State.Success.OnDefaultLocationLoaded.class) {
 
             showProgressBar(false);
             Log.d(TAG, "renderLocation: success");
-
             State.Success.OnDefaultLocationLoaded s = (State.Success.OnDefaultLocationLoaded) state;
+            myLocation = s.getCityString();
             viewModel.loadForecasts(s.getCityString());
         }
 
