@@ -7,11 +7,11 @@
     android:background="@color/colorDarkBackground">
     <TextView
         android:id="@+id/explore_list_item_textView"
-        android:textSize="18sp"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
-        android:paddingRight="8dp"
-        android:paddingLeft="8dp"
+        android:textSize="@dimen/explore_list_item_text_view_text_size"
+        android:paddingTop="@dimen/explore_list_item_text_view_padding_top"
+        android:paddingBottom="@dimen/explore_list_item_text_view_padding_bottom"
+        android:paddingEnd="@dimen/explore_list_item_text_view_padding_end"
+        android:paddingStart="@dimen/explore_list_item_text_view_padding_start"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textStyle="bold"
@@ -19,6 +19,6 @@
     <View
         android:id="@+id/separator"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
+        android:layout_height="@dimen/separator_height"
         android:background="#858585" />
 </LinearLayout>

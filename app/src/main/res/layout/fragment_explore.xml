@@ -31,7 +31,7 @@
                 android:layout_weight="3"
                 android:textAlignment="center"
                 android:textColor="@color/colorTextOnDark"
-                android:textSize="28sp"
+                android:textSize="@dimen/explore_location_text_view_text_size"
                 android:textStyle="bold"
                 android:layout_marginTop="16dp"/>
 
@@ -50,7 +50,7 @@
                 android:layout_weight="2"
                 android:textAlignment="center"
                 android:textColor="@color/colorTextOnDark"
-                android:textSize="24sp"
+                android:textSize="@dimen/explore_condition_text_view_text_size"
                 android:textStyle="bold"/>
 
             <TextView
@@ -60,7 +60,7 @@
                 android:layout_weight="1.5"
                 android:textAlignment="center"
                 android:textColor="@color/colorTextOnDark"
-                android:textSize="18sp" />
+                android:textSize="@dimen/explore_condition_detail_text_view_text_size" />
 
             <TextView
                 android:id="@+id/explore_temp_textView"
@@ -69,17 +69,17 @@
                 android:layout_weight="3"
                 android:textAlignment="center"
                 android:textColor="@color/colorTextOnDark"
-                android:textSize="36sp"
-                android:layout_marginBottom="8dp"/>
+                android:textSize="@dimen/explore_temp_text_view_text_size"
+                android:layout_marginBottom="@dimen/explore_temp_text_view_margin_bottom"/>
 
         </LinearLayout>
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/favorite_button"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="@dimen/favorite_button_width"
+            android:layout_height="@dimen/favorite_button_height"
             android:layout_gravity="bottom|right"
-            android:layout_margin="16dp"
+            android:layout_margin="@dimen/favorite_button_margin"
             android:src="@drawable/ic_favorite_border"
             android:background="@color/fui_transparent"
             android:visibility="invisible"/>
@@ -88,12 +88,12 @@
     <androidx.appcompat.widget.SearchView
         android:id="@+id/explore_searchview"
         android:layout_width="match_parent"
-        android:layout_height="36dp"
-        android:elevation="10dp"
+        android:layout_height="@dimen/search_view_height"
+        android:elevation="@dimen/search_view_elevation"
         android:gravity="center"
-        android:paddingTop="8dp"
-        android:paddingBottom="4dp"
-        android:textSize="16sp"
+        android:paddingTop="@dimen/search_view_padding_top"
+        android:paddingBottom="@dimen/search_view_padding_bottom"
+        android:textSize="@dimen/search_view_text_size"
         android:background="@color/colorTextOnDark"
         app:layout_constraintBottom_toTopOf="@+id/explore_recycler_view"
         app:layout_constraintEnd_toEndOf="parent"
