@@ -1,7 +1,6 @@
 package com.hyunki.origin_weather_app.model.util;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,7 +12,7 @@ import java.util.ArrayList;
 
 public class JSONUtil {
 
-    public static ArrayList<City> cityJSONtoJACKSON(Context context, String filename){
+    public static ArrayList<City> cityJSONtoJACKSON(Context context, String filename) {
         ObjectMapper mapper = new ObjectMapper();
         ArrayList<City> cities = null;
         try {

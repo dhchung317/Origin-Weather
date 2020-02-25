@@ -19,7 +19,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 import java.util.Objects;
@@ -67,7 +66,7 @@ public class AuthActivity extends AppCompatActivity {
         auth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
                     if (!task.isSuccessful()) {
-                        showSnackBar(findViewById(R.id.auth_layout),getString(R.string.google_sign_in_authentication_failed));
+                        showSnackBar(findViewById(R.id.auth_layout), getString(R.string.google_sign_in_authentication_failed));
                     }
                     showProgressBar(false);
                 });
@@ -90,7 +89,7 @@ public class AuthActivity extends AppCompatActivity {
                 firebaseAuthWithGoogle(Objects.requireNonNull(account));
             } catch (ApiException e) {
                 Log.w(TAG, getString(R.string.google_sign_in_failed), e);
-                showSnackBar(findViewById(R.id.auth_layout),getString(R.string.google_sign_in_failed));
+                showSnackBar(findViewById(R.id.auth_layout), getString(R.string.google_sign_in_failed));
 
             }
         }
@@ -101,7 +100,7 @@ public class AuthActivity extends AppCompatActivity {
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
-    private void onAuthSuccess(){
+    private void onAuthSuccess() {
         finish();
     }
 
@@ -112,6 +111,7 @@ public class AuthActivity extends AppCompatActivity {
             progressBar.setVisibility(View.GONE);
         }
     }
+
     public void showSnackBar(View v, String message) {
         Snackbar.make(v, message,
                 Snackbar.LENGTH_SHORT)

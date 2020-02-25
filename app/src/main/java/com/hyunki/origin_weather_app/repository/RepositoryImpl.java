@@ -15,6 +15,7 @@ import io.reactivex.Observable;
 
 public class RepositoryImpl implements Repository {
 
+    //TODO- hide api key
     private static final String API_KEY = "872ec5abb676430b71b8708ce8e2e1ba";
 
     @Override
