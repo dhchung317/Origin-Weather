@@ -30,7 +30,7 @@
                 android:textAlignment="center"
                 android:textColor="@color/colorTextOnDark"
                 android:textStyle="bold"
-                android:textSize="18sp" />
+                android:textSize="@dimen/weather_location_text_view_text_size" />
 
             <TextView
                 android:id="@+id/my_weather_date_textView"
@@ -40,7 +40,7 @@
                 android:textAlignment="center"
                 android:textColor="@color/colorTextOnDark"
                 android:textStyle="bold"
-                android:textSize="32sp" />
+                android:textSize="@dimen/weather_date_text_view_text_size" />
 
             <ImageView
                 android:id="@+id/my_weather_icon_imageView"
@@ -56,7 +56,7 @@
                 android:layout_weight="2"
                 android:textAlignment="center"
                 android:textColor="@color/colorTextOnDark"
-                android:textSize="24sp"
+                android:textSize="@dimen/weather_condition_text_view_text_size"
                 android:textStyle="bold"/>
 
             <TextView
@@ -66,17 +66,17 @@
                 android:layout_weight="1.5"
                 android:textAlignment="center"
                 android:textColor="@color/colorTextOnDark"
-                android:textSize="18sp" />
+                android:textSize="@dimen/weather_condition_detail_text_view_text_size" />
 
             <TextView
                 android:id="@+id/my_weather_temp_textView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="@dimen/weather_temp_text_view_margin_bottom"
                 android:layout_weight="3"
                 android:textAlignment="center"
                 android:textColor="@color/colorTextOnDark"
-                android:textSize="36sp"
+                android:textSize="@dimen/weather_temp_text_view_text_size"
                 android:textStyle="bold"/>
 
         </LinearLayout>
