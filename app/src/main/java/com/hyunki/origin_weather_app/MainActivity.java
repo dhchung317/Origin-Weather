@@ -28,6 +28,7 @@ import com.hyunki.origin_weather_app.adapter.FavoritesAdapter;
 import com.hyunki.origin_weather_app.adapter.WeatherPagerAdapter;
 import com.hyunki.origin_weather_app.controller.CityClickListener;
 import com.hyunki.origin_weather_app.controller.FavoritesClickListener;
+import com.hyunki.origin_weather_app.fragments.FirebaseUtil;
 import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.viewmodel.SharedViewModel;
 
@@ -39,6 +40,8 @@ import java.util.Objects;
 import static com.hyunki.origin_weather_app.fragments.WeatherFragment.PERMISSION_ID;
 
 public class MainActivity extends AppCompatActivity implements CityClickListener, FavoritesClickListener {
+
+    private FirebaseUtil firebaseUtil;
 
     private FirebaseAuth auth;
 
@@ -55,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         setContentView(R.layout.activity_main);
 
         auth = FirebaseAuth.getInstance();
+        firebaseUtil = new FirebaseUtil();
 
         favoriteCitiesListView = findViewById(R.id.favorite_cities_list_view);
 
@@ -100,6 +104,8 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         City city3 = new City();
         city3.setName("London");
 
+
+
         dummyArray.add(city);
         dummyArray.add(city2);
         dummyArray.add(city3);
@@ -140,6 +146,7 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
     public void updateFragmentWithCityInfo(City city) {
         viewModel.loadSingleCityById(String.valueOf(city.getId()));
         viewModel.loadForecastsById(String.valueOf(city.getId()));
+        viewModel.setCurrentExploredCity(city);
     }
 
     @Override
@@ -212,4 +219,6 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         //TODO- factor out snackbar message and instead go to explore fragment and render forecast with city object data
         Toast.makeText(this, String.format("%s %s", getString(R.string.dummylist_snackbar_alert), city.getName()), Toast.LENGTH_SHORT).show();
     }
+
+
 }

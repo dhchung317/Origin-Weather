@@ -34,6 +34,7 @@ import java.util.Objects;
 import io.reactivex.Observable;
 
 public class ExploreFragment extends BaseFragment implements SearchView.OnQueryTextListener {
+    private FirebaseUtil firebaseUtil;
     private FirebaseAuth auth;
     private FirebaseAuth.AuthStateListener authListener;
 
@@ -55,6 +56,7 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        firebaseUtil = new FirebaseUtil();
         auth = FirebaseAuth.getInstance();
 
         viewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(SharedViewModel.class);
@@ -106,6 +108,7 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
         favoriteButton.setTag(R.drawable.ic_favorite_border);
         favoriteButton.setOnClickListener(view -> {
             toggleFavoriteButton();
+
         });
     }
 
@@ -195,13 +198,24 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
         // -then when you click to favorite something, you need to check if it is in the dataset or not.
         // -if it is, remove from dataset and refresh view. if not add to dataset and refresh view.
 
+
         if ((int) favoriteButton.getTag() == R.drawable.ic_favorite_border) {
             favoriteButton.setTag(R.drawable.ic_favorite);
             favoriteButton.setImageResource(R.drawable.ic_favorite);
+            addCurrentExploredCityToFavorites(viewModel.getCurrentExploredCity());
         } else {
             favoriteButton.setTag(R.drawable.ic_favorite_border);
             favoriteButton.setImageResource(R.drawable.ic_favorite_border);
+            removeCurrentExploredCityFromFavorites(viewModel.getCurrentExploredCity());
         }
+    }
+
+    private void addCurrentExploredCityToFavorites(City city){
+        firebaseUtil.addFavorite(city);
+    }
+
+    private void removeCurrentExploredCityFromFavorites(City city){
+        firebaseUtil.removeFavorite(city);
     }
 
     @Override

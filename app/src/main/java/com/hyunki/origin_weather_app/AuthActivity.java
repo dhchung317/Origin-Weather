@@ -24,7 +24,6 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import java.util.Objects;
 
 public class AuthActivity extends AppCompatActivity {
-
     private static final int RC_SIGN_IN = 1;
     private static final String TAG = "AuthActivity";
 

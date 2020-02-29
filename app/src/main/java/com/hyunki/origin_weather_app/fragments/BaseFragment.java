@@ -62,5 +62,4 @@ abstract class BaseFragment extends Fragment {
         showSnackBar(Objects.requireNonNull(getActivity(),getString(R.string.require_non_null_activity))
                 .findViewById(R.id.coordinatorLayout), getString(R.string.location_error));
     }
-
 }
