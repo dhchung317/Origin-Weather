@@ -98,8 +98,8 @@
             android:orientation="vertical">
             <include layout="@layout/nav_header"/>
 
-            <ListView
-                android:id="@+id/favorite_cities_list_view"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/favorite_cities_recycler_view"
                 android:layout_marginTop="?actionBarSize"
                 android:visibility="gone"
                 android:layout_width="match_parent"

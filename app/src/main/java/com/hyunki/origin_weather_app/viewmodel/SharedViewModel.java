@@ -19,6 +19,7 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.model.Forecast;
 import com.hyunki.origin_weather_app.repository.RepositoryImpl;
 
@@ -47,6 +48,8 @@ public class SharedViewModel extends AndroidViewModel {
     private MutableLiveData<State> cityLiveData = new MutableLiveData<>();
     private MutableLiveData<State> singleCityLiveData = new MutableLiveData<>();
     private MutableLiveData<State> defaultLocation = new MutableLiveData<>();
+
+    private City currentExploredCity = new City("");
 
     public SharedViewModel(@NonNull Application application) {
         super(application);
@@ -144,7 +147,6 @@ public class SharedViewModel extends AndroidViewModel {
                 locationRequest, locationCallback,
                 Looper.myLooper()
         );
-
     }
 
     private LocationCallback locationCallback = new LocationCallback() {
@@ -175,6 +177,14 @@ public class SharedViewModel extends AndroidViewModel {
 
     public LiveData<State> getSingleCityLiveData() {
         return singleCityLiveData;
+    }
+
+    public City getCurrentExploredCity() {
+        return currentExploredCity;
+    }
+
+    public void setCurrentExploredCity(City currentExploredCity) {
+        this.currentExploredCity = currentExploredCity;
     }
 
     private String getLocationString(Location location) {

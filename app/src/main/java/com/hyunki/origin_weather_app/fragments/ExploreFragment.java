@@ -1,6 +1,7 @@
 package com.hyunki.origin_weather_app.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.hyunki.origin_weather_app.R;
 import com.hyunki.origin_weather_app.adapter.CityRecyclerViewAdapter;
+import com.hyunki.origin_weather_app.controller.UpdateFavoritesListener;
 import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.model.Forecast;
 import com.hyunki.origin_weather_app.model.util.TempUtil;
@@ -27,15 +29,22 @@ import com.squareup.picasso.Picasso;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 
 import io.reactivex.Observable;
 
 public class ExploreFragment extends BaseFragment implements SearchView.OnQueryTextListener {
+    private FirebaseUtil firebaseUtil;
     private FirebaseAuth auth;
     private FirebaseAuth.AuthStateListener authListener;
+    private UpdateFavoritesListener updateFavoritesListener;
+    private ArrayList<City> favoriteCities = new ArrayList<>();
+
+    private Set<Integer> cityIdSet = new HashSet<>();
 
     private SharedViewModel viewModel;
 
@@ -49,25 +58,38 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
     private TextView conditionDetailTextView;
     private SearchView searchView;
 
-    private String default_city_name = "";
-    private City default_city = new City();
+//    private String default_city_name = "";
+//    private City default_city = new City();
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        viewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(SharedViewModel.class);
+        firebaseUtil = new FirebaseUtil();
         auth = FirebaseAuth.getInstance();
 
-        viewModel = ViewModelProviders.of(Objects.requireNonNull(getActivity())).get(SharedViewModel.class);
-
-        viewModel.loadCities(getActivity().getApplicationContext(), "citylist.json");
+        viewModel.loadCities(getActivity(), "citylist.json");
         viewModel.getCityLiveData().observe(getViewLifecycleOwner(), this::renderCities);
         viewModel.getSingleCityLiveData().observe(getViewLifecycleOwner(), this::renderSingleCity);
         viewModel.getExploredForecastLiveData().observe(getViewLifecycleOwner(), this::renderForecast);
 
+        updateFavoritesListener = (UpdateFavoritesListener) getActivity();
+        updateFavoritesListener.updateFavorites();
+
         authListener = firebaseAuth -> {
+            Log.d("explorefragment", "onActivityCreated: listener hit");
             if (firebaseAuth.getCurrentUser() != null) {
                 initButton();
                 refresh();
+
+                favoriteCities = firebaseUtil.getFavorites();
+                Log.d("explorefragment", "onActivityCreated: " + favoriteCities.size());
+
+
+                for (int i = 0; i < favoriteCities.size(); i++) {
+                    cityIdSet.add(favoriteCities.get(i).getId());
+                    Log.d("explorefragment", "onActivityCreated: " + favoriteCities.get(i).getId());
+                }
             } else {
                 hideButton();
             }
@@ -85,6 +107,10 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
     @Override
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        firebaseUtil = new FirebaseUtil();
+//        auth = FirebaseAuth.getInstance();
+//        firebaseUtil.loadFavorites();
+
         searchView = view.findViewById(R.id.explore_searchview);
         searchView.setOnQueryTextListener(this);
 
@@ -99,14 +125,15 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
         exploreRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         exploreRecyclerView.setAdapter(cityRecyclerViewAdapter);
         favoriteButton = view.findViewById(R.id.favorite_button);
+
+//        if(firebaseUtil.auth.getCurrentUser() != null){
+//        }
+
     }
 
     private void initButton() {
         favoriteButton.setImageResource(R.drawable.ic_favorite_border);
         favoriteButton.setTag(R.drawable.ic_favorite_border);
-        favoriteButton.setOnClickListener(view -> {
-            toggleFavoriteButton();
-        });
     }
 
     private void hideButton() {
@@ -178,8 +205,23 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
             State.Success.OnCityByIdLoaded s = (State.Success.OnCityByIdLoaded) state;
 
             City city = s.getCity();
-            default_city_name = city.getName();
-            default_city = city;
+//            default_city_name = city.getName();
+//            default_city = city;
+            viewModel.setCurrentExploredCity(city);
+
+            if(firebaseUtil.auth != null) {
+                if (firebaseUtil.isFavorite(city)) {
+                    favoriteButton.setTag(R.drawable.ic_favorite);
+                    favoriteButton.setImageResource(R.drawable.ic_favorite);
+                }else{
+                    favoriteButton.setTag(R.drawable.ic_favorite_border);
+                    favoriteButton.setImageResource(R.drawable.ic_favorite_border);
+                }
+            }
+
+            favoriteButton.setOnClickListener(view -> {
+                toggleFavoriteButton();
+            });
 
             locationTextView.setText(city.getName());
             if (searchView.hasFocus()) {
@@ -195,13 +237,25 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
         // -then when you click to favorite something, you need to check if it is in the dataset or not.
         // -if it is, remove from dataset and refresh view. if not add to dataset and refresh view.
 
+
         if ((int) favoriteButton.getTag() == R.drawable.ic_favorite_border) {
             favoriteButton.setTag(R.drawable.ic_favorite);
             favoriteButton.setImageResource(R.drawable.ic_favorite);
-        } else {
+            addCurrentExploredCityToFavorites(viewModel.getCurrentExploredCity());
+        } else if((int) favoriteButton.getTag() == R.drawable.ic_favorite) {
             favoriteButton.setTag(R.drawable.ic_favorite_border);
             favoriteButton.setImageResource(R.drawable.ic_favorite_border);
+            removeCurrentExploredCityFromFavorites(viewModel.getCurrentExploredCity());
         }
+        updateFavoritesListener.updateFavorites();
+    }
+
+    private void addCurrentExploredCityToFavorites(City city){
+        firebaseUtil.addFavorite(city);
+    }
+
+    private void removeCurrentExploredCityFromFavorites(City city){
+        firebaseUtil.removeFavorite(city);
     }
 
     @Override
@@ -228,9 +282,10 @@ public class ExploreFragment extends BaseFragment implements SearchView.OnQueryT
 
     @Override
     void refresh() {
-        if (!default_city_name.isEmpty()) {
-            viewModel.loadSingleCityById(String.valueOf(default_city.getId()));
-            viewModel.loadForecastsById(String.valueOf(default_city.getId()));
+
+        if (!viewModel.getCurrentExploredCity().getName().isEmpty()) {
+            viewModel.loadSingleCityById(String.valueOf(viewModel.getCurrentExploredCity().getId()));
+            viewModel.loadForecastsById(String.valueOf(viewModel.getCurrentExploredCity().getId()));
         }
     }
 }

@@ -7,7 +7,11 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.hyunki.origin_weather_app.R;
+import com.hyunki.origin_weather_app.controller.CityClickListener;
 import com.hyunki.origin_weather_app.controller.FavoritesClickListener;
 import com.hyunki.origin_weather_app.model.City;
 
@@ -15,31 +19,50 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
-public class FavoritesAdapter extends ArrayAdapter<City> {
-    private FavoritesClickListener favoritesClickListener;
+public class FavoritesAdapter extends RecyclerView.Adapter<FavoritesViewHolder> {
+    private ArrayList<City> favorites = new ArrayList<>();
+    private FavoritesClickListener listener;
 
-    public FavoritesAdapter(Context context, ArrayList<City> cities) {
-        super(context, 0, cities);
-        if(context instanceof FavoritesClickListener){
-            favoritesClickListener = (FavoritesClickListener) context;
-        }else{
-            throw new RuntimeException(context.toString()
-                    + "must implement FavoritesClickListener");
-        }
+    public FavoritesAdapter(ArrayList<City> favorites) {
+        this.favorites = favorites;
     }
 
-    @NotNull
     @Override
-    public View getView(int position, View convertView, @NotNull ViewGroup parent) {
-        City city = getItem(position);
-
-        if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.list_item_favorite, parent, false);
+    public FavoritesViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_favorite, parent, false);
+        Context context = parent.getContext();
+        if (context instanceof CityClickListener) {
+            listener = (FavoritesClickListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + "must implement CityClickListener");
         }
-        TextView textView = convertView.findViewById(R.id.favorite_list_item_textView);
-        textView.setText(city != null ? city.getName() : "");
+        return new FavoritesViewHolder(view);
+    }
 
-        textView.setOnClickListener(view -> favoritesClickListener.showForecastForSelectedFavorite(city));
-        return convertView;
+    @Override
+    public void onBindViewHolder(@NonNull FavoritesViewHolder holder, int position) {
+        holder.bind(favorites.get(position),listener);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
+
+    @Override
+    public int getItemCount() {
+        return favorites.size();
+    }
+
+
+    public void setFavorites(ArrayList<City> favorites) {
+        this.favorites = favorites;
+        notifyDataSetChanged();
     }
 }
