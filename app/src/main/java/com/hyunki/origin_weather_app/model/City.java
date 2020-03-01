@@ -6,6 +6,13 @@ public class City {
     private String name;
     private String country;
 
+    public City() {
+    }
+
+    public City(String name) {
+        this.name = name;
+    }
+
     public int getId() {
         return id;
     }

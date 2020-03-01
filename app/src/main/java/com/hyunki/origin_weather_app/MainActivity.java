@@ -4,11 +4,11 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,6 +17,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.navigation.NavigationView;
@@ -24,24 +26,26 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 import com.hyunki.origin_weather_app.adapter.FavoritesAdapter;
 import com.hyunki.origin_weather_app.adapter.WeatherPagerAdapter;
 import com.hyunki.origin_weather_app.controller.CityClickListener;
 import com.hyunki.origin_weather_app.controller.FavoritesClickListener;
+import com.hyunki.origin_weather_app.controller.UpdateFavoritesListener;
 import com.hyunki.origin_weather_app.fragments.FirebaseUtil;
 import com.hyunki.origin_weather_app.model.City;
 import com.hyunki.origin_weather_app.viewmodel.SharedViewModel;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Objects;
 
 import static com.hyunki.origin_weather_app.fragments.WeatherFragment.PERMISSION_ID;
 
-public class MainActivity extends AppCompatActivity implements CityClickListener, FavoritesClickListener {
+public class MainActivity extends AppCompatActivity implements CityClickListener, FavoritesClickListener, UpdateFavoritesListener {
 
     private FirebaseUtil firebaseUtil;
+    private FirebaseAuth.AuthStateListener authStateListener;
 
     private FirebaseAuth auth;
 
@@ -49,7 +53,18 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
 
     private ActionBarDrawerToggle actionBarDrawerToggle;
 
-    private ListView favoriteCitiesListView;
+    private RecyclerView favoritesRecyclerView;
+
+    TabLayout tabLayout;
+    ViewPager2 viewPager;
+    DrawerLayout drawer;
+    NavigationView navigationView;
+
+    public FavoritesAdapter getAdapter() {
+        return adapter;
+    }
+
+    private FavoritesAdapter adapter;
 
     @SuppressLint("CheckResult")
     @Override
@@ -60,14 +75,14 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
         auth = FirebaseAuth.getInstance();
         firebaseUtil = new FirebaseUtil();
 
-        favoriteCitiesListView = findViewById(R.id.favorite_cities_list_view);
+        favoritesRecyclerView = findViewById(R.id.favorite_cities_recycler_view);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         invalidateOptionsMenu();
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        NavigationView navigationView;
+        drawer = findViewById(R.id.drawer_layout);
+
 
         actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawer, R.string.open, R.string.close);
         actionBarDrawerToggle.setDrawerIndicatorEnabled(true);
@@ -79,12 +94,12 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
 
         viewModel = ViewModelProviders.of(this).get(SharedViewModel.class);
 
-        ViewPager2 viewPager = findViewById(R.id.viewpager);
+        viewPager = findViewById(R.id.viewpager);
         viewPager.setUserInputEnabled(false);
         WeatherPagerAdapter viewPagerAdapter = new WeatherPagerAdapter(getSupportFragmentManager(), this.getLifecycle());
         viewPager.setAdapter(viewPagerAdapter);
 
-        TabLayout tabLayout = findViewById(R.id.tabs);
+        tabLayout = findViewById(R.id.tabs);
         new TabLayoutMediator(tabLayout, viewPager,
                 (tab, position) -> {
                     if (position == 0) {
@@ -95,28 +110,28 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
                 }).attach();
 
         //Favorites Dummy Array
-        ArrayList<City> dummyArray = new ArrayList<>();
-
-        City city = new City();
-        city.setName("Brooklyn");
-        City city2 = new City();
-        city2.setName("Seoul");
-        City city3 = new City();
-        city3.setName("London");
-
-
-
-        dummyArray.add(city);
-        dummyArray.add(city2);
-        dummyArray.add(city3);
-        //Favorites Dummy Array
+//        ArrayList<City> dummyArray = new ArrayList<>();
+//
+//        City city = new City();
+//        city.setName("Brooklyn");
+//        City city2 = new City();
+//        city2.setName("Seoul");
+//        City city3 = new City();
+//        city3.setName("London");
+//
+//
+//
+//        dummyArray.add(city);
+//        dummyArray.add(city2);
+//        dummyArray.add(city3);
+//        //Favorites Dummy Array
+//
+//
 
         //TODO- factor out dummylist and create method to check firebase for favorite entries under the signed in user
         // - if signed in, and if there are entries, retrieve the entry list, and set the adapter with the list
         // - use context passed in the adapter constructor to write methods in the adapter that will call
         // an onClick listener that will display the selected city's forecast as a page on the exploreFragment
-        FavoritesAdapter adapter = new FavoritesAdapter(this, dummyArray);
-        favoriteCitiesListView.setAdapter(adapter);
 
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -130,6 +145,16 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
             }
             return true;
         });
+
+        authStateListener = firebaseAuth -> {
+            if(auth.getCurrentUser() != null){
+                Log.d("mainactivity", "onCreate: listener hit");
+                adapter = new FavoritesAdapter(firebaseUtil.getFavorites());
+                favoritesRecyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+                favoritesRecyclerView.setAdapter(adapter);
+            }
+        };
+         auth.addAuthStateListener(authStateListener);
     }
 
     @Override
@@ -146,7 +171,6 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
     public void updateFragmentWithCityInfo(City city) {
         viewModel.loadSingleCityById(String.valueOf(city.getId()));
         viewModel.loadForecastsById(String.valueOf(city.getId()));
-        viewModel.setCurrentExploredCity(city);
     }
 
     @Override
@@ -192,10 +216,11 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
     }
 
     private void toggleFavoritesList() {
-        if (favoriteCitiesListView.getVisibility() == View.GONE) {
-            favoriteCitiesListView.setVisibility(View.VISIBLE);
+        if (favoritesRecyclerView.getVisibility() == View.GONE) {
+//            adapter.setFavorites(firebaseUtil.getFavorites());
+            favoritesRecyclerView.setVisibility(View.VISIBLE);
         } else {
-            favoriteCitiesListView.setVisibility(View.GONE);
+            favoritesRecyclerView.setVisibility(View.GONE);
         }
     }
 
@@ -216,9 +241,21 @@ public class MainActivity extends AppCompatActivity implements CityClickListener
 
     @Override
     public void showForecastForSelectedFavorite(City city) {
+        navigationView.getCheckedItem().setChecked(false);
+        favoritesRecyclerView.setVisibility(View.GONE);
+        viewPager.setCurrentItem(1);
+        viewModel.loadSingleCityById(String.valueOf(city.getId()));
+        viewModel.loadForecastsById(String.valueOf(city.getId()));
+        drawer.closeDrawers();
         //TODO- factor out snackbar message and instead go to explore fragment and render forecast with city object data
         Toast.makeText(this, String.format("%s %s", getString(R.string.dummylist_snackbar_alert), city.getName()), Toast.LENGTH_SHORT).show();
+
     }
 
-
+    @Override
+    public void updateFavorites() {
+        if(auth.getCurrentUser() != null) {
+            adapter.setFavorites(firebaseUtil.getFavorites());
+        }
+    }
 }

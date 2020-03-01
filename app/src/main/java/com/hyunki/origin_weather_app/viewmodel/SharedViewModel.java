@@ -49,15 +49,7 @@ public class SharedViewModel extends AndroidViewModel {
     private MutableLiveData<State> singleCityLiveData = new MutableLiveData<>();
     private MutableLiveData<State> defaultLocation = new MutableLiveData<>();
 
-    public City getCurrentExploredCity() {
-        return currentExploredCity;
-    }
-
-    public void setCurrentExploredCity(City currentExploredCity) {
-        this.currentExploredCity = currentExploredCity;
-    }
-
-    private City currentExploredCity = new City();
+    private City currentExploredCity = new City("");
 
     public SharedViewModel(@NonNull Application application) {
         super(application);
@@ -187,6 +179,14 @@ public class SharedViewModel extends AndroidViewModel {
         return singleCityLiveData;
     }
 
+    public City getCurrentExploredCity() {
+        return currentExploredCity;
+    }
+
+    public void setCurrentExploredCity(City currentExploredCity) {
+        this.currentExploredCity = currentExploredCity;
+    }
+
     private String getLocationString(Location location) {
         Geocoder gcd = new Geocoder(getApplication(), Locale.getDefault());
         Address address;
@@ -214,4 +214,5 @@ public class SharedViewModel extends AndroidViewModel {
         }
         return returningForecasts;
     }
+
 }
